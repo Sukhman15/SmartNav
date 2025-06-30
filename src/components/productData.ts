@@ -83,7 +83,7 @@ export const productDatabase: ScannedProduct[] = [
       { name: 'Fresh Spinach', reason: 'Add greens to your sandwiches' }
     ],
     inStock: true,
-    imageUrl: 'https://i5.walmartimages.com/asr/1d1a0a4b-5a5c-4e3e-8b0f-5e5e5e5e5e5e.1b2b3b4b5b6b7b8b9b0b1b2b3b4b5b6b7b8b9b0b1b2b3b4b5b6b7b8b9b0'
+    imageUrl: 'https://th.bing.com/th/id/R.e0470bc2759cdc213872b349c0a2aaf6?rik=vTCiZwMbd4fXDg&riu=http%3a%2f%2fi5.walmartimages.ca%2fimages%2fLarge%2fd_6%2f75g%2f30539062_GV_WholeWheatBread_675g.jpg&ehk=LGtY%2f7QZEsGVKJ%2fUSGwVC%2fY3MPsz0pKqVT8E0qOmAgU%3d&risl=&pid=ImgRaw&r=0'
   },
   {
     id: 'prod-124',
