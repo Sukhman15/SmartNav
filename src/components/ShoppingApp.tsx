@@ -4,7 +4,8 @@ import ProductRecommendations, { Product } from './ProductRecommendations';
 import ShoppingList, { ShoppingItem } from './ShoppingList';
 import CameraScanner, { ScannedProduct } from './CameraScanner';
 import { Card } from '@/components/ui/card';
-import { ShoppingCart, Camera, Star } from 'lucide-react';
+import { ShoppingCart, Camera, Star, List } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const ShoppingApp: React.FC = () => {
   const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([]);
@@ -64,20 +65,18 @@ const ShoppingApp: React.FC = () => {
             <span>Recommendations</span>
           </TabsTrigger>
           <TabsTrigger value="list" className="flex items-center space-x-2">
-            <ShoppingCart className="w-4 h-4" />
-            <span>Shopping List</span>
+            <List className="w-4 h-4" />
+            <span>My List</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="scanner">
+        <TabsContent value="scanner" className="mt-4">
           <Card className="p-4">
-            <CameraScanner 
-              onProductScanned={handleScannedProduct}
-            />
+            <CameraScanner onProductScanned={handleScannedProduct} />
           </Card>
         </TabsContent>
 
-        <TabsContent value="recommendations">
+        <TabsContent value="recommendations" className="mt-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card className="p-4">
               <ProductRecommendations 
@@ -110,14 +109,27 @@ const ShoppingApp: React.FC = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="list">
+        <TabsContent value="list" className="mt-4">
           <Card className="p-4">
-            <ShoppingList 
-              items={shoppingItems} 
-              onUpdateItems={setShoppingItems}
-              scannedProduct={scannedProduct}
-              recommendedPairings={recommendedPairings}
-            />
+            {shoppingItems.length > 0 ? (
+              <ShoppingList 
+                items={shoppingItems} 
+                onUpdateItems={setShoppingItems}
+                scannedProduct={scannedProduct}
+                recommendedPairings={recommendedPairings}
+              />
+            ) : (
+              <div className="text-center py-12">
+                <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Your list is empty</h3>
+                <p className="text-gray-500 mb-4">
+                  Scan or add items to get started with your shopping
+                </p>
+                <Button onClick={() => setActiveTab('scanner')}>
+                  Start Scanning
+                </Button>
+              </div>
+            )}
           </Card>
         </TabsContent>
       </Tabs>
