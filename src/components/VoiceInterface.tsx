@@ -15,10 +15,18 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ isActive, onToggle }) =
   const [response, setResponse] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [audioLevel, setAudioLevel] = useState(0);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
     if (isActive && 'webkitSpeechRecognition' in window) {
       startListening();
+      if (!hasInitialized) {
+        // Set default question and answer
+        const defaultQuestion = "Where is almond milk?";
+        setTranscript(defaultQuestion);
+        handleVoiceCommand(defaultQuestion);
+        setHasInitialized(true);
+      }
     } else {
       stopListening();
     }
@@ -40,6 +48,7 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ isActive, onToggle }) =
       handleVoiceCommand(randomCommand);
     }, 2000);
   };
+
 
   const stopListening = () => {
     setIsListening(false);
@@ -68,7 +77,7 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ isActive, onToggle }) =
     
     if (lowerInput.includes('almond milk') && (lowerInput.includes('where') || lowerInput.includes('location') || lowerInput.includes('aisle'))) {
       return {
-        content: "Almond milk is located in Aisle C2. Current stock level: 0/30 (out of stock). Would you like me to check nearby stores or suggest alternatives?",
+        content: "Almond milk is located in Aisle C2. Current stock level: 5/30 (low stock). Would you like me to check nearby stores or suggest alternatives?",
         suggestions: ['Check nearby stores', 'Find alternatives', 'Notify when restocked']
       };
     }
@@ -187,7 +196,7 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ isActive, onToggle }) =
       
       if (lowerInput.includes('almond milk')) {
         return {
-          content: "Almond milk current stock level: 0/30 (out of stock). Expected restock tomorrow morning.",
+          content: "Almond milk current stock level: 5/30 (low stock). Expected restock tomorrow morning.",
           suggestions: ['Check nearby stores', 'Find alternatives', 'Notify when restocked']
         };
       }
@@ -264,6 +273,9 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ isActive, onToggle }) =
       setAudioLevel(0);
     }
   }, [isListening]);
+
+
+  // ... [rest of the component code remains exactly the same until the return statement]
 
   return (
     <>
