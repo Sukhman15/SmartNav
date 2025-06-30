@@ -35,7 +35,6 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const recommendations: Product[] = [
-    // ... your product list with nutrition as before
     {
       id: 1,
       name: 'Organic Greek Yogurt',
@@ -55,14 +54,90 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
         protein: '12g',
       },
     },
-    // ... rest of products
+    {
+      id: 2,
+      name: 'Avocado Oil Spray',
+      price: 3.99,
+      rating: 4.5,
+      reviews: 156,
+      aisle: 'B4',
+      category: 'cooking',
+      reason: 'Frequently bought with organic items',
+      inStock: true,
+      nutrition: {
+        calories: 0,
+        fat: '0g',
+        carbs: '0g',
+        protein: '0g',
+      },
+    },
+    {
+      id: 3,
+      name: 'Whole Grain Pasta',
+      price: 2.49,
+      originalPrice: 3.29,
+      rating: 4.3,
+      reviews: 89,
+      aisle: 'B6',
+      category: 'pantry',
+      discount: 24,
+      reason: 'Popular healthy alternative',
+      inStock: true,
+      nutrition: {
+        calories: 200,
+        fat: '1g',
+        carbs: '40g',
+        protein: '7g',
+      },
+    },
+    {
+      id: 4,
+      name: 'Fresh Blueberries',
+      price: 5.99,
+      rating: 4.8,
+      reviews: 203,
+      aisle: 'A3',
+      category: 'produce',
+      reason: 'Trending superfood this week',
+      inStock: true,
+      nutrition: {
+        calories: 85,
+        fat: '0.5g',
+        carbs: '21g',
+        protein: '1g',
+      },
+    },
+    {
+      id: 5,
+      name: 'Almond Butter',
+      price: 7.99,
+      originalPrice: 9.99,
+      rating: 4.6,
+      reviews: 445,
+      aisle: 'B5',
+      category: 'pantry',
+      discount: 20,
+      reason: 'Great with whole grain bread',
+      inStock: false,
+      nutrition: {
+        calories: 190,
+        fat: '18g',
+        carbs: '6g',
+        protein: '7g',
+      },
+    },
   ];
 
-  // categories and filteredRecommendations as before...
+  const categories = [
+    { id: 'all', name: 'All', icon: Star },
+    { id: 'trending', name: 'Trending', icon: TrendingUp },
+    { id: 'deals', name: 'Deals', icon: Percent },
+    { id: 'favorites', name: 'Favorites', icon: Heart },
+  ];
 
-  const filteredRecommendations = recommendations.filter(product => {
+  const filteredRecommendations = recommendations.filter((product) => {
     if (selectedCategory === 'all') return true;
-    if (selectedCategory === 'deals') return product.discount;
+    if (selectedCategory === 'deals') return product.discount !== undefined;
     if (selectedCategory === 'trending') return product.rating >= 4.5;
     if (selectedCategory === 'favorites') return product.reviews > 200;
     return true;
@@ -86,13 +161,10 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
             <Star className="w-5 h-5 text-orange-500" />
             <span>Recommendations</span>
           </CardTitle>
+
+          {/* Category Filters */}
           <div className="flex space-x-2 mt-4">
-            {[
-              { id: 'all', name: 'All', icon: Star },
-              { id: 'trending', name: 'Trending', icon: TrendingUp },
-              { id: 'deals', name: 'Deals', icon: Percent },
-              { id: 'favorites', name: 'Favorites', icon: Heart },
-            ].map((category) => {
+            {categories.map((category) => {
               const Icon = category.icon;
               return (
                 <Button
@@ -116,6 +188,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
               key={product.id}
               className="border rounded-lg p-4 hover:shadow-md transition-shadow"
             >
+              {/* Product Header */}
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <h4 className="font-medium text-sm mb-1">{product.name}</h4>
@@ -128,6 +201,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
                 )}
               </div>
 
+              {/* Price and Rating */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
                   <span className="font-bold text-green-600">${product.price}</span>
@@ -145,6 +219,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
                 </div>
               </div>
 
+              {/* Location and Stock */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-1 text-xs text-gray-600">
                   <MapPin className="w-3 h-3" />
@@ -161,6 +236,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
                 </Badge>
               </div>
 
+              {/* Actions */}
               <div className="flex space-x-2">
                 <Button
                   size="sm"
@@ -182,9 +258,6 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
               </div>
             </div>
           ))}
-
-          {/* Smart Insights and Weekly Trends if needed */}
-
         </CardContent>
       </Card>
 
