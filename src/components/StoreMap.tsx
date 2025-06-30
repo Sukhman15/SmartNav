@@ -8,8 +8,6 @@ import {
   Pill, Shirt, Home, ToyBrick, BookOpen, RefreshCw
 } from 'lucide-react';
 
-
-
 type Position = {
   x: number;
   y: number;
@@ -36,23 +34,28 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
   const [isMoving, setIsMoving] = useState(false);
   const [visitedSections, setVisitedSections] = useState<string[]>([]);
   const [showLegend, setShowLegend] = useState(true);
+  const [productMarkers, setProductMarkers] = useState<Array<{id: number, name: string, position: Position}>>([
+    { id: 1, name: 'Organic Apples', position: { x: 1, y: 3, section: 'Produce' } },
+    { id: 2, name: 'Almond Milk', position: { x: 3, y: 7, section: 'Dairy' } },
+    { id: 3, name: 'Whole Wheat Bread', position: { x: 4, y: 3, section: 'Bakery' } }
+  ]);
 
   // Department icons
-const departmentIcons: Record<string, React.ReactNode> = {
-  'Produce': <Apple className="w-3 h-3" />,
-  'Dairy': <Milk className="w-3 h-3" />,
-  'Meat': <Beef className="w-3 h-3" />,  // Changed from Bone to Beef
-  'Bakery': <span className="text-xs">🥖</span>,
-  'Pharmacy': <Pill className="w-3 h-3" />,  // Changed from Pharmacy to Pill
-  'Clothing': <Shirt className="w-3 h-3" />,
-  'Home Goods': <Home className="w-3 h-3" />,
-  'Electronics': <span className="text-xs">📱</span>,
-  'Toys': <ToyBrick className="w-3 h-3" />,
-  'Books': <BookOpen className="w-3 h-3" />,
-  'Checkout': <ShoppingCart className="w-3 h-3" />,
-  'Customer Service': <AlertCircle className="w-3 h-3" />,
-  'Restrooms': <span className="text-xs">🚻</span>
-};
+  const departmentIcons: Record<string, React.ReactNode> = {
+    'Produce': <Apple className="w-3 h-3" />,
+    'Dairy': <Milk className="w-3 h-3" />,
+    'Meat': <Beef className="w-3 h-3" />,
+    'Bakery': <span className="text-xs">🥖</span>,
+    'Pharmacy': <Pill className="w-3 h-3" />,
+    'Clothing': <Shirt className="w-3 h-3" />,
+    'Home Goods': <Home className="w-3 h-3" />,
+    'Electronics': <span className="text-xs">📱</span>,
+    'Toys': <ToyBrick className="w-3 h-3" />,
+    'Books': <BookOpen className="w-3 h-3" />,
+    'Checkout': <ShoppingCart className="w-3 h-3" />,
+    'Customer Service': <AlertCircle className="w-3 h-3" />,
+    'Restrooms': <span className="text-xs">🚻</span>
+  };
 
   // Initialize grid with complex layout
   useEffect(() => {
@@ -135,6 +138,11 @@ const departmentIcons: Record<string, React.ReactNode> = {
     createSection(22, 5, 24, 7, 'Kiosk', false);
 
     setGrid(newGrid);
+    
+    // Set entrance as default starting position
+    const entrancePosition = { x: 5, y: 29, section: 'Entrance' };
+    setCurrentPosition(entrancePosition);
+    setVisitedSections([entrancePosition.section]);
   }, []);
 
   // A* Pathfinding Algorithm
@@ -259,6 +267,32 @@ const departmentIcons: Record<string, React.ReactNode> = {
           setIsMoving(false);
           setCurrentPosition(destination);
           setVisitedSections(prev => [...prev, destination.section]);
+          
+          // Check if we reached a product marker
+          const reachedProduct = productMarkers.find(p => 
+            p.position.x === destination.x && p.position.y === destination.y
+          );
+          
+          if (reachedProduct) {
+            // Remove the reached product marker
+            setProductMarkers(prev => 
+              prev.filter(p => !(p.position.x === destination.x && p.position.y === destination.y))
+            );
+            
+            // Find next product marker to navigate to
+            const nextProduct = productMarkers.find(p => 
+              !(p.position.x === destination.x && p.position.y === destination.y)
+            );
+            
+            if (nextProduct) {
+              const newPath = findPath(destination, nextProduct.position);
+              setDestination(nextProduct.position);
+              setPath(newPath);
+              setEstimatedTime(`${Math.ceil(newPath.length * 0.2)} min`);
+              setIsMoving(true);
+            }
+          }
+          
           return [];
         }
 
@@ -273,7 +307,18 @@ const departmentIcons: Record<string, React.ReactNode> = {
     }, MOVEMENT_SPEED);
 
     return () => clearInterval(moveInterval);
-  }, [isMoving, path, currentPosition, destination]);
+  }, [isMoving, path, currentPosition, destination, productMarkers, findPath]);
+
+  // Create initial path to first product when grid is loaded
+  useEffect(() => {
+    if (grid.length > 0 && currentPosition && productMarkers.length > 0) {
+      const firstProduct = productMarkers[0];
+      const newPath = findPath(currentPosition, firstProduct.position);
+      setDestination(firstProduct.position);
+      setPath(newPath);
+      setEstimatedTime(`${Math.ceil(newPath.length * 0.2)} min`);
+    }
+  }, [grid, currentPosition, productMarkers, findPath]);
 
   // Reset path
   const resetPath = () => {
@@ -281,6 +326,16 @@ const departmentIcons: Record<string, React.ReactNode> = {
     setDestination(null);
     setIsMoving(false);
     setMode('start');
+    // Reset product markers
+    setProductMarkers([
+      { id: 1, name: 'Organic Apples', position: { x: 1, y: 3, section: 'Produce' } },
+      { id: 2, name: 'Almond Milk', position: { x: 3, y: 7, section: 'Dairy' } },
+      { id: 3, name: 'Whole Wheat Bread', position: { x: 4, y: 3, section: 'Bakery' } }
+    ]);
+    // Reset to entrance
+    const entrancePosition = { x: 5, y: 29, section: 'Entrance' };
+    setCurrentPosition(entrancePosition);
+    setVisitedSections([entrancePosition.section]);
   };
 
   // Quick navigation
@@ -525,6 +580,22 @@ const departmentIcons: Record<string, React.ReactNode> = {
                 </div>
               );
             })}
+
+            {/* Product Markers */}
+            {productMarkers.map((product) => (
+              <div
+                key={product.id}
+                className="absolute w-4 h-4 bg-gradient-to-br from-orange-500 to-orange-700 rounded-full border-2 border-white shadow-lg z-15 flex items-center justify-center text-white text-xs"
+                style={{
+                  left: `${product.position.x * CELL_SIZE + CELL_SIZE/2}%`,
+                  top: `${product.position.y * CELL_SIZE + CELL_SIZE/2}%`,
+                  transform: 'translate(-50%, -50%)',
+                }}
+                title={product.name}
+              >
+                {product.name.split(' ').map(word => word[0]).join('')}
+              </div>
+            ))}
           </div>
 
           {/* Interactive Legend */}
@@ -555,6 +626,12 @@ const departmentIcons: Record<string, React.ReactNode> = {
                     A
                   </div>
                   <span className="text-gray-700">Item</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 bg-gradient-to-br from-orange-500 to-orange-700 rounded-full border border-white flex items-center justify-center text-white text-xs">
+                    OA
+                  </div>
+                  <span className="text-gray-700">Product</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-4 h-4 bg-blue-100 rounded border border-blue-200"></div>
