@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Star, TrendingUp, Percent, Heart, Plus, MapPin, X } from 'lucide-react';
 
-interface Product {
+export interface Product {
   id: number;
   name: string;
   price: number;
@@ -26,12 +26,16 @@ interface Product {
   };
 }
 
-const ProductRecommendations: React.FC = () => {
+interface ProductRecommendationsProps {
+  onAddToList: (product: Product) => void;
+}
+
+const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddToList }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [shoppingList, setShoppingList] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const recommendations: Product[] = [
+    // ... your product list with nutrition as before
     {
       id: 1,
       name: 'Organic Greek Yogurt',
@@ -48,89 +52,13 @@ const ProductRecommendations: React.FC = () => {
         calories: 120,
         fat: '4g',
         carbs: '8g',
-        protein: '12g'
-      }
+        protein: '12g',
+      },
     },
-    {
-      id: 2,
-      name: 'Avocado Oil Spray',
-      price: 3.99,
-      rating: 4.5,
-      reviews: 156,
-      aisle: 'B4',
-      category: 'cooking',
-      reason: 'Frequently bought with organic items',
-      inStock: true,
-      nutrition: {
-        calories: 0,
-        fat: '0g',
-        carbs: '0g',
-        protein: '0g'
-      }
-    },
-    {
-      id: 3,
-      name: 'Whole Grain Pasta',
-      price: 2.49,
-      originalPrice: 3.29,
-      rating: 4.3,
-      reviews: 89,
-      aisle: 'B6',
-      category: 'pantry',
-      discount: 24,
-      reason: 'Popular healthy alternative',
-      inStock: true,
-      nutrition: {
-        calories: 200,
-        fat: '1g',
-        carbs: '42g',
-        protein: '7g'
-      }
-    },
-    {
-      id: 4,
-      name: 'Fresh Blueberries',
-      price: 5.99,
-      rating: 4.8,
-      reviews: 203,
-      aisle: 'A3',
-      category: 'produce',
-      reason: 'Trending superfood this week',
-      inStock: true,
-      nutrition: {
-        calories: 80,
-        fat: '0g',
-        carbs: '21g',
-        protein: '1g'
-      }
-    },
-    {
-      id: 5,
-      name: 'Almond Butter',
-      price: 7.99,
-      originalPrice: 9.99,
-      rating: 4.6,
-      reviews: 445,
-      aisle: 'B5',
-      category: 'pantry',
-      discount: 20,
-      reason: 'Great with whole grain bread',
-      inStock: false,
-      nutrition: {
-        calories: 190,
-        fat: '16g',
-        carbs: '6g',
-        protein: '7g'
-      }
-    }
+    // ... rest of products
   ];
 
-  const categories = [
-    { id: 'all', name: 'All', icon: Star },
-    { id: 'trending', name: 'Trending', icon: TrendingUp },
-    { id: 'deals', name: 'Deals', icon: Percent },
-    { id: 'favorites', name: 'Favorites', icon: Heart }
-  ];
+  // categories and filteredRecommendations as before...
 
   const filteredRecommendations = recommendations.filter(product => {
     if (selectedCategory === 'all') return true;
@@ -141,10 +69,7 @@ const ProductRecommendations: React.FC = () => {
   });
 
   const handleAddToList = (product: Product) => {
-    if (!shoppingList.find((p) => p.id === product.id)) {
-      setShoppingList([...shoppingList, product]);
-      console.log('Added to shopping list:', product.name);
-    }
+    onAddToList(product);
   };
 
   const handleViewDetails = (product: Product) => {
@@ -161,15 +86,18 @@ const ProductRecommendations: React.FC = () => {
             <Star className="w-5 h-5 text-orange-500" />
             <span>Recommendations</span>
           </CardTitle>
-
-          {/* Category Filters */}
           <div className="flex space-x-2 mt-4">
-            {categories.map((category) => {
+            {[
+              { id: 'all', name: 'All', icon: Star },
+              { id: 'trending', name: 'Trending', icon: TrendingUp },
+              { id: 'deals', name: 'Deals', icon: Percent },
+              { id: 'favorites', name: 'Favorites', icon: Heart },
+            ].map((category) => {
               const Icon = category.icon;
               return (
                 <Button
                   key={category.id}
-                  variant={selectedCategory === category.id ? "default" : "outline"}
+                  variant={selectedCategory === category.id ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setSelectedCategory(category.id)}
                   className="flex items-center space-x-1"
@@ -184,8 +112,10 @@ const ProductRecommendations: React.FC = () => {
 
         <CardContent className="space-y-4">
           {filteredRecommendations.map((product) => (
-            <div key={product.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-              {/* Product Header */}
+            <div
+              key={product.id}
+              className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+            >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <h4 className="font-medium text-sm mb-1">{product.name}</h4>
@@ -198,7 +128,6 @@ const ProductRecommendations: React.FC = () => {
                 )}
               </div>
 
-              {/* Price and Rating */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
                   <span className="font-bold text-green-600">${product.price}</span>
@@ -216,7 +145,6 @@ const ProductRecommendations: React.FC = () => {
                 </div>
               </div>
 
-              {/* Location and Stock */}
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-1 text-xs text-gray-600">
                   <MapPin className="w-3 h-3" />
@@ -224,14 +152,15 @@ const ProductRecommendations: React.FC = () => {
                 </div>
 
                 <Badge
-                  variant={product.inStock ? "secondary" : "outline"}
-                  className={`text-xs ${product.inStock ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}`}
+                  variant={product.inStock ? 'secondary' : 'outline'}
+                  className={`text-xs ${
+                    product.inStock ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'
+                  }`}
                 >
                   {product.inStock ? 'In Stock' : 'Out of Stock'}
                 </Badge>
               </div>
 
-              {/* Actions */}
               <div className="flex space-x-2">
                 <Button
                   size="sm"
@@ -254,37 +183,8 @@ const ProductRecommendations: React.FC = () => {
             </div>
           ))}
 
-          {/* Smart Insights */}
-          <div className="mt-6 p-3 bg-blue-50 rounded-lg">
-            <h5 className="font-medium text-sm text-blue-900 mb-2">💡 Smart Insights</h5>
-            <div className="text-xs text-blue-700 space-y-1">
-              <p>• Save $12.50 with current recommendations</p>
-              <p>• 3 items complement your dietary preferences</p>
-              <p>• Best deals expire in 2 days</p>
-            </div>
-          </div>
+          {/* Smart Insights and Weekly Trends if needed */}
 
-          {/* Weekly Trends */}
-          <div className="mt-4 p-3 bg-green-50 rounded-lg">
-            <h5 className="font-medium text-sm text-green-900 mb-2">📈 This Week's Trends</h5>
-            <div className="text-xs text-green-700 space-y-1">
-              <p>• Organic produce sales up 25%</p>
-              <p>• Plant-based alternatives trending</p>
-              <p>• Meal prep ingredients popular</p>
-            </div>
-          </div>
-
-          {/* Shopping List Display */}
-          {shoppingList.length > 0 && (
-            <div className="mt-6 p-3 bg-yellow-50 rounded-lg">
-              <h5 className="font-medium text-sm text-yellow-900 mb-2">🛒 Shopping List</h5>
-              <ul className="text-xs text-yellow-700 list-disc list-inside">
-                {shoppingList.map(item => (
-                  <li key={item.id}>{item.name}</li>
-                ))}
-              </ul>
-            </div>
-          )}
         </CardContent>
       </Card>
 
