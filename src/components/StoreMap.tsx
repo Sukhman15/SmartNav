@@ -2,51 +2,42 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Navigation, Clock, AlertCircle, Zap, Target, ChevronRight } from 'lucide-react';
-
-// Define types for our grid system
-type GridCell = {
-  x: number;
-  y: number;
-  walkable: boolean;
-  section?: string;
-};
+import { MapPin, Navigation, Clock, AlertCircle, Zap, Target, ChevronRight, LocateFixed } from 'lucide-react';
 
 type Position = {
   x: number;
   y: number;
+  section: string;
 };
 
 interface StoreMapProps {
-  currentLocation: Position & { section: string };
   shoppingList: Array<{ id: number; name: string; found: boolean; aisle: string; price: number }>;
-  onLocationUpdate: (location: Position & { section: string }) => void;
 }
 
-const GRID_SIZE = 20; // Size of our grid (20x20)
-const CELL_SIZE = 4; // Size of each cell in percentage
+const GRID_SIZE = 20;
+const CELL_SIZE = 4;
 
-const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLocationUpdate }) => {
-  const [grid, setGrid] = useState<GridCell[][]>([]);
+const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
+  const [grid, setGrid] = useState<{x: number, y: number, walkable: boolean, section?: string}[][]>([]);
   const [path, setPath] = useState<Position[]>([]);
-  const [destination, setDestination] = useState<Position & { section: string } | null>(null);
-  const [isSelectingDestination, setIsSelectingDestination] = useState(false);
+  const [startPoint, setStartPoint] = useState<Position | null>(null);
+  const [destination, setDestination] = useState<Position | null>(null);
+  const [mode, setMode] = useState<'start' | 'destination'>('start');
   const [estimatedTime, setEstimatedTime] = useState('0 min');
 
-  // Initialize the grid
+  // Initialize grid
   useEffect(() => {
-    const newGrid: GridCell[][] = [];
+    const newGrid: {x: number, y: number, walkable: boolean, section?: string}[][] = [];
     
-    // Create empty grid
     for (let y = 0; y < GRID_SIZE; y++) {
-      const row: GridCell[] = [];
+      const row = [];
       for (let x = 0; x < GRID_SIZE; x++) {
         row.push({ x, y, walkable: true });
       }
       newGrid.push(row);
     }
-    
-    // Mark walls and sections
+
+    // Define store layout
     // Horizontal aisles
     for (let x = 3; x < 17; x++) {
       // Aisle A (top)
@@ -56,68 +47,70 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
       // Aisle C (bottom)
       newGrid[15][x].section = x < 7 ? 'C1' : x < 12 ? 'C2' : 'C3';
     }
-    
-    // Vertical paths between aisles
+
+    // Vertical walls
     for (let y = 5; y <= 15; y++) {
-      newGrid[y][3].walkable = false; // Left wall
-      newGrid[y][16].walkable = false; // Right wall
+      newGrid[y][3].walkable = false;
+      newGrid[y][16].walkable = false;
     }
-    
-    // Add sections
-    // Produce section
+
+    // Sections
+    // Produce
     for (let x = 1; x < 3; x++) {
       for (let y = 1; y < 5; y++) {
         newGrid[y][x].section = 'Produce';
         newGrid[y][x].walkable = false;
       }
     }
-    
-    // Dairy section
+
+    // Dairy
     for (let x = 17; x < 19; x++) {
       for (let y = 3; y < 7; y++) {
         newGrid[y][x].section = 'Dairy';
         newGrid[y][x].walkable = false;
       }
     }
-    
-    // Meat section
+
+    // Meat
     for (let x = 1; x < 3; x++) {
       for (let y = 15; y < 19; y++) {
         newGrid[y][x].section = 'Meat';
         newGrid[y][x].walkable = false;
       }
     }
-    
-    // Checkout area
+
+    // Checkout
     for (let x = 8; x < 12; x++) {
       for (let y = 18; y < 20; y++) {
         newGrid[y][x].section = 'Checkout';
         newGrid[y][x].walkable = false;
       }
     }
-    
+
     // Restrooms
     newGrid[18][1].section = 'Restrooms';
     newGrid[18][2].section = 'Restrooms';
-    
+
+    // Customer Service
+    newGrid[2][18].section = 'Customer Service';
+    newGrid[2][17].section = 'Customer Service';
+
     setGrid(newGrid);
   }, []);
 
-  // A* pathfinding algorithm
+  // A* Pathfinding Algorithm
   const findPath = (start: Position, end: Position): Position[] => {
     if (!grid.length) return [];
-    
-    // Helper function to calculate heuristic (Manhattan distance)
-    const heuristic = (a: Position, b: Position) => {
-      return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
-    };
-    
-    // Initialize open and closed sets
+
+    // Helper functions
+    const heuristic = (a: Position, b: Position) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+    const getKey = (pos: Position) => `${pos.x},${pos.y}`;
+
     const openSet: Position[] = [start];
-    const cameFrom: { [key: string]: Position } = {};
-    const gScore: { [key: string]: number } = {};
-    const fScore: { [key: string]: number } = {};
-    
+    const cameFrom: Record<string, Position> = {};
+    const gScore: Record<string, number> = {};
+    const fScore: Record<string, number> = {};
+
     // Initialize scores
     for (let y = 0; y < GRID_SIZE; y++) {
       for (let x = 0; x < GRID_SIZE; x++) {
@@ -126,36 +119,34 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
         fScore[key] = Infinity;
       }
     }
-    
-    gScore[`${start.x},${start.y}`] = 0;
-    fScore[`${start.x},${start.y}`] = heuristic(start, end);
-    
+
+    gScore[getKey(start)] = 0;
+    fScore[getKey(start)] = heuristic(start, end);
+
     while (openSet.length > 0) {
-      // Find node in openSet with lowest fScore
+      // Find node with lowest fScore
       let current = openSet[0];
       let currentIndex = 0;
       for (let i = 1; i < openSet.length; i++) {
-        const key = `${openSet[i].x},${openSet[i].y}`;
-        const currentKey = `${current.x},${current.y}`;
-        if (fScore[key] < fScore[currentKey]) {
+        if (fScore[getKey(openSet[i])] < fScore[getKey(current)]) {
           current = openSet[i];
           currentIndex = i;
         }
       }
-      
-      // If we've reached the end, reconstruct path
+
+      // Reached destination
       if (current.x === end.x && current.y === end.y) {
         const path: Position[] = [current];
-        while (cameFrom[`${current.x},${current.y}`]) {
-          current = cameFrom[`${current.x},${current.y}`];
+        while (cameFrom[getKey(current)]) {
+          current = cameFrom[getKey(current)];
           path.unshift(current);
         }
         return path;
       }
-      
+
       // Move current from openSet to closed set
       openSet.splice(currentIndex, 1);
-      
+
       // Check neighbors
       const neighbors = [
         { x: current.x, y: current.y - 1 }, // up
@@ -167,93 +158,94 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
         pos.y >= 0 && pos.y < GRID_SIZE &&
         grid[pos.y][pos.x].walkable
       );
-      
+
       for (const neighbor of neighbors) {
-        const tentativeGScore = gScore[`${current.x},${current.y}`] + 1;
-        const neighborKey = `${neighbor.x},${neighbor.y}`;
-        
+        const neighborPos: Position = {
+          ...neighbor,
+          section: grid[neighbor.y][neighbor.x].section || `Aisle ${neighbor.x},${neighbor.y}`
+        };
+        const tentativeGScore = gScore[getKey(current)] + 1;
+        const neighborKey = getKey(neighborPos);
+
         if (tentativeGScore < gScore[neighborKey]) {
           cameFrom[neighborKey] = current;
           gScore[neighborKey] = tentativeGScore;
-          fScore[neighborKey] = tentativeGScore + heuristic(neighbor, end);
-          
-          if (!openSet.some(pos => pos.x === neighbor.x && pos.y === neighbor.y)) {
-            openSet.push(neighbor);
+          fScore[neighborKey] = tentativeGScore + heuristic(neighborPos, end);
+
+          if (!openSet.some(pos => pos.x === neighborPos.x && pos.y === neighborPos.y)) {
+            openSet.push(neighborPos);
           }
         }
       }
     }
-    
-    // No path found
-    return [];
+
+    return []; // No path found
   };
 
-  // Handle clicking on the map to set destination
+  // Handle map click
   const handleMapClick = (x: number, y: number) => {
-    if (!isSelectingDestination || !grid[y] || !grid[y][x] || !grid[y][x].walkable) return;
-    
-    const newDestination = {
+    if (!grid[y] || !grid[y][x] || !grid[y][x].walkable) return;
+
+    const position = {
       x,
       y,
       section: grid[y][x].section || `Aisle ${x},${y}`
     };
-    
-    setDestination(newDestination);
-    const newPath = findPath(
-      { x: currentLocation.x, y: currentLocation.y },
-      { x, y }
-    );
-    
-    setPath(newPath);
-    setEstimatedTime(`${newPath.length * 0.5} min`);
-    setIsSelectingDestination(false);
+
+    if (mode === 'start') {
+      setStartPoint(position);
+      setMode('destination');
+    } else {
+      setDestination(position);
+      if (startPoint) {
+        const newPath = findPath(startPoint, position);
+        setPath(newPath);
+        setEstimatedTime(`${Math.ceil(newPath.length * 0.3)} min`);
+      }
+    }
   };
 
-  // Start navigation to destination
-  const startNavigation = () => {
-    if (!destination) return;
-    
-    onLocationUpdate({
-      x: destination.x,
-      y: destination.y,
-      section: destination.section
-    });
-    
-    // In a real app, you might animate through the path
+  // Reset path
+  const resetPath = () => {
     setPath([]);
+    setStartPoint(null);
     setDestination(null);
+    setMode('start');
   };
 
-  // Get section coordinates for shopping list items
-  const getAisleCoordinates = (aisle: string): Position => {
-    const aisleMap: { [key: string]: Position } = {
-      'A1': { x: 4, y: 5 }, 'A2': { x: 10, y: 5 }, 'A3': { x: 14, y: 5 },
-      'B1': { x: 4, y: 10 }, 'B2': { x: 7, y: 10 }, 'B3': { x: 10, y: 10 },
-      'B4': { x: 13, y: 10 }, 'B5': { x: 16, y: 10 },
-      'C1': { x: 4, y: 15 }, 'C2': { x: 9, y: 15 }, 'C3': { x: 14, y: 15 },
-    };
-    return aisleMap[aisle] || { x: 10, y: 10 };
-  };
-
-  // Quick navigation to common locations
+  // Quick navigation
   const quickNavigate = (location: string) => {
-    const locations: { [key: string]: Position & { section: string } } = {
+    const locations: Record<string, Position> = {
       'Restrooms': { x: 1, y: 18, section: 'Restrooms' },
       'Checkout': { x: 10, y: 19, section: 'Checkout' },
       'Customer Service': { x: 18, y: 2, section: 'Customer Service' }
     };
-    
+
     const dest = locations[location];
     if (!dest) return;
-    
+
+    if (!startPoint) {
+      setMode('destination');
+      setDestination(dest);
+      alert('Please first select your starting point on the map');
+      return;
+    }
+
+    const newPath = findPath(startPoint, dest);
     setDestination(dest);
-    const newPath = findPath(
-      { x: currentLocation.x, y: currentLocation.y },
-      { x: dest.x, y: dest.y }
-    );
-    
     setPath(newPath);
-    setEstimatedTime(`${newPath.length * 0.5} min`);
+    setEstimatedTime(`${Math.ceil(newPath.length * 0.3)} min`);
+  };
+
+  // Get aisle coordinates for shopping items
+  const getAisleCoordinates = (aisle: string): Position => {
+    const aisleMap: Record<string, Position> = {
+      'A1': { x: 4, y: 5, section: 'A1' }, 'A2': { x: 10, y: 5, section: 'A2' }, 'A3': { x: 14, y: 5, section: 'A3' },
+      'B1': { x: 4, y: 10, section: 'B1' }, 'B2': { x: 7, y: 10, section: 'B2' }, 'B3': { x: 10, y: 10, section: 'B3' },
+      'B4': { x: 13, y: 10, section: 'B4' }, 'B5': { x: 16, y: 10, section: 'B5' },
+      'C1': { x: 4, y: 15, section: 'C1' }, 'C2': { x: 9, y: 15, section: 'C2' }, 'C3': { x: 14, y: 15, section: 'C3' },
+    };
+    return aisleMap[aisle] || { x: 10, y: 10, section: 'Unknown' };
   };
 
   return (
@@ -264,7 +256,7 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
             <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
               <MapPin className="w-5 h-5" />
             </div>
-            <span className="font-bold">Smart Store Map</span>
+            <span className="font-bold">Smart Store Navigation</span>
           </CardTitle>
           <div className="flex items-center space-x-4">
             <Badge variant="secondary" className="flex items-center space-x-1 bg-white/20 text-white border-white/30">
@@ -275,28 +267,44 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
               size="sm" 
               variant="secondary"
               className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-              onClick={() => setIsSelectingDestination(!isSelectingDestination)}
+              onClick={resetPath}
             >
               <Navigation className="w-4 h-4 mr-1" />
-              {isSelectingDestination ? 'Cancel' : 'Set Destination'}
+              Reset Path
             </Button>
           </div>
         </div>
       </CardHeader>
       
       <CardContent className="p-6">
+        {/* Instructions */}
+        <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-sm text-blue-800 font-medium">
+            {mode === 'start' ? '👉 First, click on the map to set your STARTING POINT' : '👉 Now click to set your DESTINATION'}
+          </p>
+          {startPoint && (
+            <p className="text-xs text-blue-700 mt-1">
+              Starting point: {startPoint.section} (X: {startPoint.x}, Y: {startPoint.y})
+            </p>
+          )}
+          {destination && (
+            <p className="text-xs text-blue-700 mt-1">
+              Destination: {destination.section} (X: {destination.x}, Y: {destination.y})
+            </p>
+          )}
+        </div>
+
+        {/* Store Map */}
         <div className="relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-6 h-96 overflow-hidden border-2 border-slate-200 shadow-inner">
-          {/* Store Grid */}
+          {/* Grid */}
           <div className="relative w-full h-full">
-            {/* Grid cells */}
             {grid.map((row, y) => (
               <React.Fragment key={y}>
                 {row.map((cell, x) => (
                   <div
                     key={`${x}-${y}`}
-                    className={`absolute ${cell.walkable ? 'bg-white/50' : 'bg-gray-300/50'} 
-                      ${isSelectingDestination && cell.walkable ? 'cursor-pointer hover:bg-blue-100/50' : ''}
-                      ${cell.section ? 'border border-gray-200' : ''}`}
+                    className={`absolute ${cell.walkable ? 'bg-white/50 hover:bg-blue-100/70 cursor-pointer' : 'bg-gray-300/50'} 
+                      border border-gray-100`}
                     style={{
                       left: `${x * CELL_SIZE}%`,
                       top: `${y * CELL_SIZE}%`,
@@ -343,31 +351,45 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
                   strokeDasharray="4,2"
                   markerEnd="url(#arrowhead)"
                 />
+                {/* Add circles for each path point */}
+                {path.map((point, index) => (
+                  <circle
+                    key={index}
+                    cx={`${point.x * CELL_SIZE + CELL_SIZE/2}%`}
+                    cy={`${point.y * CELL_SIZE + CELL_SIZE/2}%`}
+                    r="1.5%"
+                    fill="url(#pathGradient)"
+                  />
+                ))}
               </svg>
             )}
 
-            {/* Current Location */}
-            <div
-              className="absolute w-4 h-4 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full border-2 border-white shadow-xl z-20"
-              style={{
-                left: `${currentLocation.x * CELL_SIZE + CELL_SIZE/2}%`,
-                top: `${currentLocation.y * CELL_SIZE + CELL_SIZE/2}%`,
-                transform: 'translate(-50%, -50%)',
-              }}
-            >
-              <div className="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-75"></div>
-            </div>
+            {/* Start Point */}
+            {startPoint && (
+              <div
+                className="absolute w-5 h-5 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full border-2 border-white shadow-xl z-20 flex items-center justify-center text-white text-xs font-bold"
+                style={{
+                  left: `${startPoint.x * CELL_SIZE + CELL_SIZE/2}%`,
+                  top: `${startPoint.y * CELL_SIZE + CELL_SIZE/2}%`,
+                  transform: 'translate(-50%, -50%)',
+                }}
+              >
+                <LocateFixed className="w-3 h-3" />
+              </div>
+            )}
 
             {/* Destination */}
             {destination && (
               <div
-                className="absolute w-4 h-4 bg-gradient-to-br from-green-500 to-green-700 rounded-full border-2 border-white shadow-xl z-20 animate-pulse"
+                className="absolute w-5 h-5 bg-gradient-to-br from-green-500 to-green-700 rounded-full border-2 border-white shadow-xl z-20 flex items-center justify-center text-white text-xs font-bold"
                 style={{
                   left: `${destination.x * CELL_SIZE + CELL_SIZE/2}%`,
                   top: `${destination.y * CELL_SIZE + CELL_SIZE/2}%`,
                   transform: 'translate(-50%, -50%)',
                 }}
-              />
+              >
+                <Target className="w-3 h-3" />
+              </div>
             )}
 
             {/* Shopping List Items */}
@@ -376,7 +398,7 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
               return (
                 <div
                   key={item.id}
-                  className="absolute w-3 h-3 bg-gradient-to-br from-red-500 to-red-700 rounded-full border-2 border-white shadow-lg z-15"
+                  className="absolute w-4 h-4 bg-gradient-to-br from-red-500 to-red-700 rounded-full border-2 border-white shadow-lg z-15"
                   style={{
                     left: `${pos.x * CELL_SIZE + CELL_SIZE/2}%`,
                     top: `${pos.y * CELL_SIZE + CELL_SIZE/2}%`,
@@ -393,56 +415,19 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
             <div className="flex items-center space-x-4 text-xs font-medium">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full border border-white"></div>
-                <span className="text-gray-700">You</span>
+                <span className="text-gray-700">Start</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-gradient-to-br from-green-500 to-green-700 rounded-full border border-white"></div>
+                <span className="text-gray-700">Destination</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-gradient-to-br from-red-500 to-red-700 rounded-full border border-white"></div>
                 <span className="text-gray-700">Items</span>
               </div>
-              {destination && (
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-gradient-to-br from-green-500 to-green-700 rounded-full border border-white"></div>
-                  <span className="text-gray-700">Destination</span>
-                </div>
-              )}
             </div>
           </div>
         </div>
-
-        {/* Current Status */}
-        <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-start space-x-4">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <MapPin className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="font-bold text-blue-900">Current Location</p>
-                <p className="text-sm text-blue-700 font-medium">{currentLocation.section}</p>
-              </div>
-            </div>
-            {destination && (
-              <div className="text-right">
-                <p className="text-sm font-bold text-blue-900">Destination Set</p>
-                <p className="text-xs text-blue-700">{destination.section}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Navigation Controls */}
-        {destination && (
-          <div className="mt-4">
-            <Button 
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
-              onClick={startNavigation}
-            >
-              <Navigation className="w-4 h-4 mr-2" />
-              Start Navigation
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        )}
 
         {/* Quick Navigation */}
         <div className="mt-6 grid grid-cols-1 gap-3">
@@ -479,6 +464,28 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
             </Button>
           </div>
         </div>
+
+        {/* Path Instructions */}
+        {path.length > 0 && (
+          <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+            <h4 className="font-bold text-green-800 flex items-center space-x-2">
+              <Navigation className="w-4 h-4" />
+              <span>Navigation Path</span>
+            </h4>
+            <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+              {path.slice(0, 5).map((step, index) => (
+                <div key={index} className="bg-white/70 p-1 rounded border border-green-100">
+                  <span className="font-medium">Step {index + 1}:</span> {step.section}
+                </div>
+              ))}
+              {path.length > 5 && (
+                <div className="bg-white/70 p-1 rounded border border-green-100 col-span-3 text-center">
+                  + {path.length - 5} more steps...
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
