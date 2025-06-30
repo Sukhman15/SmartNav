@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import {
   Clock,
   DollarSign,
 } from 'lucide-react';
+import { toast } from 'sonner'; // or your preferred toast library
 
 export interface ShoppingItem {
   id: number;
@@ -23,16 +24,75 @@ export interface ShoppingItem {
   category?: string;
   inStock?: boolean;
   alternatives?: string[];
+  imageUrl?: string;
+  nutritionScore?: string;
 }
 
 interface ShoppingListProps {
   items: ShoppingItem[];
   onUpdateItems: (items: ShoppingItem[]) => void;
+  scannedProduct?: {
+    name: string;
+    price: number;
+    aisle: string;
+    inStock: boolean;
+    imageUrl: string;
+    nutritionScore?: string;
+  } | null;
+  recommendedPairings?: {
+    name: string;
+    price: number;
+    reason: string;
+  }[];
 }
 
-const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => {
+const ShoppingList: React.FC<ShoppingListProps> = ({ 
+  items, 
+  onUpdateItems, 
+  scannedProduct,
+  recommendedPairings 
+}) => {
   const [newItem, setNewItem] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showRecommendations, setShowRecommendations] = useState(false);
+
+  // Add scanned product to list when available
+  useEffect(() => {
+    if (scannedProduct && !items.some(item => item.name === scannedProduct.name)) {
+      handleAddScannedProduct(scannedProduct);
+    }
+  }, [scannedProduct]);
+
+  const handleAddScannedProduct = (product: NonNullable<typeof scannedProduct>) => {
+    const newShoppingItem: ShoppingItem = {
+      id: Date.now(),
+      name: product.name,
+      found: false,
+      aisle: product.aisle,
+      price: product.price,
+      inStock: product.inStock,
+      imageUrl: product.imageUrl,
+      nutritionScore: product.nutritionScore,
+    };
+
+    onUpdateItems([...items, newShoppingItem]);
+    toast.success(`${product.name} added to your list`);
+  };
+
+  const handleAddRecommendedItem = (product: { name: string; price: number }) => {
+    const newShoppingItem: ShoppingItem = {
+      id: Date.now(),
+      name: product.name,
+      found: false,
+      aisle: 'TBD',
+      price: product.price,
+      inStock: true,
+    };
+
+    onUpdateItems([...items, newShoppingItem]);
+    toast.success(`${product.name} added to your list`);
+    setShowRecommendations(false);
+  };
 
   const handleAddItem = () => {
     if (!newItem.trim()) return;
@@ -49,6 +109,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
 
     onUpdateItems([...items, newShoppingItem]);
     setNewItem('');
+    toast.success(`${newItem} added to your list`);
   };
 
   const handleToggleFound = (id: number) => {
@@ -60,7 +121,11 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
   };
 
   const handleRemoveItem = (id: number) => {
-    onUpdateItems(items.filter((item) => item.id !== id));
+    const item = items.find(i => i.id === id);
+    if (item) {
+      onUpdateItems(items.filter((item) => item.id !== id));
+      toast.error(`${item.name} removed from list`);
+    }
   };
 
   const filteredItems = items.filter((item) =>
@@ -114,7 +179,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
 
       {/* Add Item */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 space-y-4">
           <div className="flex space-x-2">
             <Input
               value={newItem}
@@ -128,6 +193,41 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
               Add
             </Button>
           </div>
+
+          {recommendedPairings && recommendedPairings.length > 0 && (
+            <div className="space-y-2">
+              <Button 
+                variant="link" 
+                size="sm" 
+                className="text-blue-600 p-0 h-auto"
+                onClick={() => setShowRecommendations(!showRecommendations)}
+              >
+                {showRecommendations ? 'Hide' : 'Show'} recommended items ({recommendedPairings.length})
+              </Button>
+              
+              {showRecommendations && (
+                <div className="space-y-2">
+                  {recommendedPairings.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 border rounded">
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        {item.price > 0 && (
+                          <p className="text-sm text-gray-500">${item.price.toFixed(2)}</p>
+                        )}
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleAddRecommendedItem(item)}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
