@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ScannedProduct, productDatabase } from './productData';
+import { ScannedProduct, productDatabase } from '@/components/productData';
 import { Camera, Scan, Info, ShoppingCart, Star, MapPin, Zap, Eye, Upload, Loader2 } from 'lucide-react';
 
 interface ScannedProduct {
