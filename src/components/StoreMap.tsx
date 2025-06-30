@@ -38,21 +38,21 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
   const [showLegend, setShowLegend] = useState(true);
 
   // Department icons
-  const departmentIcons: Record<string, React.ReactNode> = {
-    'Produce': <Apple className="w-3 h-3" />,
-    'Dairy': <Milk className="w-3 h-3" />,
-    'Meat': <Bone className="w-3 h-3" />,
-    'Bakery': <span className="text-xs">🥖</span>,
-    'Pharmacy': <Pharmacy className="w-3 h-3" />,
-    'Clothing': <Shirt className="w-3 h-3" />,
-    'Home Goods': <Home className="w-3 h-3" />,
-    'Electronics': <span className="text-xs">📱</span>,
-    'Toys': <ToyBrick className="w-3 h-3" />,
-    'Books': <BookOpen className="w-3 h-3" />,
-    'Checkout': <ShoppingCart className="w-3 h-3" />,
-    'Customer Service': <AlertCircle className="w-3 h-3" />,
-    'Restrooms': <span className="text-xs">🚻</span>
-  };
+const departmentIcons: Record<string, React.ReactNode> = {
+  'Produce': <Apple className="w-3 h-3" />,
+  'Dairy': <Milk className="w-3 h-3" />,
+  'Meat': <Beef className="w-3 h-3" />,  // Changed from Bone to Beef
+  'Bakery': <span className="text-xs">🥖</span>,
+  'Pharmacy': <Pill className="w-3 h-3" />,  // Changed from Pharmacy to Pill
+  'Clothing': <Shirt className="w-3 h-3" />,
+  'Home Goods': <Home className="w-3 h-3" />,
+  'Electronics': <span className="text-xs">📱</span>,
+  'Toys': <ToyBrick className="w-3 h-3" />,
+  'Books': <BookOpen className="w-3 h-3" />,
+  'Checkout': <ShoppingCart className="w-3 h-3" />,
+  'Customer Service': <AlertCircle className="w-3 h-3" />,
+  'Restrooms': <span className="text-xs">🚻</span>
+};
 
   // Initialize grid with complex layout
   useEffect(() => {
