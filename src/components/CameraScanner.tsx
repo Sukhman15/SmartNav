@@ -123,7 +123,6 @@ const CameraScanner: React.FC = () => {
   const [scannedProduct, setScannedProduct] = useState<ScannedProduct | null>(null);
   const [scanMode, setScanMode] = useState<'barcode' | 'text' | 'nutrition'>('barcode');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [shoppingList, setShoppingList] = useState<ScannedProduct[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
