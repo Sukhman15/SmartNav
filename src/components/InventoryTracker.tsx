@@ -61,20 +61,23 @@ const InventoryTracker: React.FC = () => {
       lastUpdated: new Date(Date.now() - 2 * 60 * 1000),
       trend: 'up'
     }
-  ];
+  ]);
 
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
   useEffect(() => {
     // Simulate real-time inventory updates
     const interval = setInterval(() => {
-      setInventoryItems(prev => prev.map(item => ({
-        ...item,
-        stock: Math.max(0, item.stock + (Math.random() > 0.7 ? (Math.random() > 0.5 ? 1 : -1) : 0)),
-        lastUpdated: new Date(),
-        status: item.stock === 0 ? 'out-of-stock' : 
-               item.stock < item.maxStock * 0.2 ? 'low-stock' : 'in-stock'
-      })));
+      setInventoryItems(prev => prev.map(item => {
+        const newStock = Math.max(0, item.stock + (Math.random() > 0.7 ? (Math.random() > 0.5 ? 1 : -1) : 0));
+        return {
+          ...item,
+          stock: newStock,
+          lastUpdated: new Date(),
+          status: newStock === 0 ? 'out-of-stock' : 
+                 newStock < item.maxStock * 0.2 ? 'low-stock' : 'in-stock'
+        };
+      }));
       setLastUpdate(new Date());
     }, 10000); // Update every 10 seconds
 
