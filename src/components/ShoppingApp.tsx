@@ -1,26 +1,25 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProductRecommendations, { Product } from './ProductRecommendations';
-import ShoppingList, { ShoppingItem } from './ShoppingList';
-import CameraScanner, { ScannedProduct } from './CameraScanner';
+import ProductRecommendations from './ProductRecommendations';
+import ShoppingList from './ShoppingList';
+import CameraScanner from './CameraScanner';
 import { Card } from '@/components/ui/card';
 import { ShoppingCart, Camera, Star, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const ShoppingApp: React.FC = () => {
+const ShoppingApp = () => {
   const [shoppingItems, setShoppingItems] = useState<ShoppingItem[]>([]);
   const [scannedProduct, setScannedProduct] = useState<ScannedProduct | null>(null);
   const [activeTab, setActiveTab] = useState('scanner');
 
   const handleAddProduct = (product: Product | ScannedProduct) => {
     setShoppingItems((prev) => {
-      // Avoid duplicates by name (case insensitive)
       if (prev.some(item => item.name.toLowerCase() === product.name.toLowerCase())) {
         return prev;
       }
 
       const newItem: ShoppingItem = {
-        id: Date.now(), // Generate new ID to avoid conflicts
+        id: Date.now(),
         name: product.name,
         found: false,
         aisle: product.aisle || 'TBD',
@@ -28,106 +27,89 @@ const ShoppingApp: React.FC = () => {
         category: 'category' in product ? product.category : 'scanned',
         inStock: product.inStock !== false,
         imageUrl: 'imageUrl' in product ? product.imageUrl : undefined,
-        nutritionScore: 'nutritionScore' in product ? product.nutritionScore : undefined
       };
       return [...prev, newItem];
     });
   };
 
-  const handleScannedProduct = (product: ScannedProduct) => {
-    setScannedProduct(product);
-    setActiveTab('recommendations');
-    handleAddProduct(product);
-  };
-
-  const recommendedPairings = scannedProduct?.recommendedPairings?.map(pairing => ({
-    id: pairing.name.toLowerCase().replace(/\s+/g, '-'),
-    name: pairing.name,
-    price: 0, // You would add actual price lookup
-    rating: 0,
-    reviews: 0,
-    aisle: 'Varies',
-    category: 'pairing',
-    reason: pairing.reason,
-    inStock: true
-  })) || [];
-
   return (
-    <div className="container mx-auto p-4">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="scanner" className="flex items-center space-x-2">
+    <div className="container mx-auto p-4 min-h-screen">
+      <Tabs 
+        value={activeTab} 
+        onValueChange={setActiveTab}
+        className="w-full"
+        activationMode="automatic" // Important for proper tab switching
+      >
+        <TabsList className="grid w-full grid-cols-3 bg-background">
+          <TabsTrigger 
+            value="scanner" 
+            className="flex items-center space-x-2 data-[state=active]:bg-primary/10"
+          >
             <Camera className="w-4 h-4" />
             <span>Scanner</span>
           </TabsTrigger>
-          <TabsTrigger value="recommendations" className="flex items-center space-x-2">
+          <TabsTrigger 
+            value="recommendations"
+            className="flex items-center space-x-2 data-[state=active]:bg-primary/10"
+          >
             <Star className="w-4 h-4" />
-            <span>Recommendations</span>
+            <span>Recommend</span>
           </TabsTrigger>
-          <TabsTrigger value="list" className="flex items-center space-x-2">
+          <TabsTrigger 
+            value="list"
+            className="flex items-center space-x-2 data-[state=active]:bg-primary/10"
+          >
             <List className="w-4 h-4" />
             <span>My List</span>
           </TabsTrigger>
         </TabsList>
 
+        {/* Scanner Tab */}
         <TabsContent value="scanner" className="mt-4">
-          <Card className="p-4">
-            <CameraScanner onProductScanned={handleScannedProduct} />
+          <Card className="p-4 min-h-[500px]">
+            <CameraScanner onProductScanned={(product) => {
+              setScannedProduct(product);
+              handleAddProduct(product);
+              setActiveTab('list'); // Switch to list after scan
+            }} />
           </Card>
         </TabsContent>
 
+        {/* Recommendations Tab */}
         <TabsContent value="recommendations" className="mt-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card className="p-4">
-              <ProductRecommendations 
-                onAddToList={handleAddProduct}
-                shoppingListItems={shoppingItems}
-              />
-            </Card>
-            {scannedProduct && (
-              <Card className="p-4">
-                <h3 className="text-lg font-semibold mb-4">Recommended Pairings</h3>
-                <div className="space-y-3">
-                  {recommendedPairings.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 border rounded">
-                      <div>
-                        <h4 className="font-medium">{item.name}</h4>
-                        <p className="text-sm text-gray-500">{item.reason}</p>
-                      </div>
-                      <Button 
-                        size="sm"
-                        onClick={() => handleAddProduct(item)}
-                        disabled={shoppingItems.some(i => i.name === item.name)}
-                      >
-                        Add
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            )}
-          </div>
+          <Card className="p-4 min-h-[500px]">
+            <ProductRecommendations 
+              onAddToList={handleAddProduct}
+              shoppingListItems={shoppingItems}
+            />
+          </Card>
         </TabsContent>
 
+        {/* My List Tab */}
         <TabsContent value="list" className="mt-4">
-          <Card className="p-4">
+          <Card className="p-4 min-h-[500px]">
             {shoppingItems.length > 0 ? (
               <ShoppingList 
-                items={shoppingItems} 
+                items={shoppingItems}
                 onUpdateItems={setShoppingItems}
-                scannedProduct={scannedProduct}
-                recommendedPairings={recommendedPairings}
               />
             ) : (
-              <div className="text-center py-12">
-                <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Your list is empty</h3>
-                <p className="text-gray-500 mb-4">
-                  Scan or add items to get started with your shopping
+              <div className="flex flex-col items-center justify-center h-full py-12">
+                <ShoppingCart className="w-12 h-12 text-muted-foreground mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Your list is empty</h3>
+                <p className="text-muted-foreground mb-6">
+                  Scan items or browse recommendations to add products
                 </p>
-                <Button onClick={() => setActiveTab('scanner')}>
-                  Start Scanning
-                </Button>
+                <div className="flex gap-4">
+                  <Button onClick={() => setActiveTab('scanner')}>
+                    <Camera className="w-4 h-4 mr-2" />
+                    Scan Items
+                  </Button>
+                  <Button variant="outline" onClick={() => setActiveTab('recommendations')}>
+                    <Star className="w-4 h-4 mr-2" />
+                    View Recommendations
+                  </Button>
+                </div>
               </div>
             )}
           </Card>
@@ -135,6 +117,37 @@ const ShoppingApp: React.FC = () => {
       </Tabs>
     </div>
   );
+};
+
+// Add these type definitions if not already in your types file
+type ShoppingItem = {
+  id: number;
+  name: string;
+  found: boolean;
+  aisle: string;
+  price: number;
+  category?: string;
+  inStock?: boolean;
+  imageUrl?: string;
+};
+
+type ScannedProduct = {
+  id: string;
+  name: string;
+  price: number;
+  aisle: string;
+  inStock: boolean;
+  imageUrl: string;
+  // ... other scanner-specific properties
+};
+
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  aisle: string;
+  category: string;
+  // ... other recommendation-specific properties
 };
 
 export default ShoppingApp;
