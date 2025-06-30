@@ -621,7 +621,10 @@ const CameraScanner: React.FC = () => {
             </CardContent>
           </Card>
 
-      {shoppingList.length > 0 && (
+     
+        )}
+
+         {shoppingList.length > 0 && (
     <Card className="mt-6">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
@@ -641,7 +644,6 @@ const CameraScanner: React.FC = () => {
       </CardContent>
     </Card>
   )}
-        )}
       </div>
     </div>
   );
