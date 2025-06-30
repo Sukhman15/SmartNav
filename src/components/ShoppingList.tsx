@@ -1,13 +1,20 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ShoppingCart, Plus, MapPin, Search, Trash2, Clock, DollarSign } from 'lucide-react';
+import {
+  ShoppingCart,
+  Plus,
+  MapPin,
+  Search,
+  Trash2,
+  Clock,
+  DollarSign,
+} from 'lucide-react';
 
-interface ShoppingItem {
+export interface ShoppingItem {
   id: number;
   name: string;
   found: boolean;
@@ -29,7 +36,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
 
   const handleAddItem = () => {
     if (!newItem.trim()) return;
-    
+
     const newShoppingItem: ShoppingItem = {
       id: Date.now(),
       name: newItem,
@@ -37,29 +44,31 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
       aisle: 'TBD',
       price: 0,
       category: 'General',
-      inStock: true
+      inStock: true,
     };
-    
+
     onUpdateItems([...items, newShoppingItem]);
     setNewItem('');
   };
 
   const handleToggleFound = (id: number) => {
-    onUpdateItems(items.map(item => 
-      item.id === id ? { ...item, found: !item.found } : item
-    ));
+    onUpdateItems(
+      items.map((item) =>
+        item.id === id ? { ...item, found: !item.found } : item
+      )
+    );
   };
 
   const handleRemoveItem = (id: number) => {
-    onUpdateItems(items.filter(item => item.id !== id));
+    onUpdateItems(items.filter((item) => item.id !== id));
   };
 
-  const filteredItems = items.filter(item =>
+  const filteredItems = items.filter((item) =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const foundItems = filteredItems.filter(item => item.found);
-  const pendingItems = filteredItems.filter(item => !item.found);
+  const foundItems = filteredItems.filter((item) => item.found);
+  const pendingItems = filteredItems.filter((item) => !item.found);
   const totalPrice = items.reduce((sum, item) => sum + item.price, 0);
   const estimatedTime = Math.ceil(pendingItems.length * 2) + 5; // 2 min per item + 5 min base
 
@@ -144,12 +153,15 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
           </CardHeader>
           <CardContent className="space-y-3">
             {pendingItems.map((item) => (
-              <div key={item.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+              <div
+                key={item.id}
+                className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50"
+              >
                 <Checkbox
                   checked={item.found}
                   onCheckedChange={() => handleToggleFound(item.id)}
                 />
-                
+
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium">{item.name}</h4>
@@ -163,7 +175,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
                       </Badge>
                     </div>
                   </div>
-                  
+
                   {item.alternatives && item.alternatives.length > 0 && (
                     <div className="mt-1">
                       <p className="text-xs text-gray-500">
@@ -172,7 +184,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
                     </div>
                   )}
                 </div>
-                
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -198,12 +210,15 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
           </CardHeader>
           <CardContent className="space-y-3">
             {foundItems.map((item) => (
-              <div key={item.id} className="flex items-center space-x-3 p-3 border rounded-lg bg-green-50">
+              <div
+                key={item.id}
+                className="flex items-center space-x-3 p-3 border rounded-lg bg-green-50"
+              >
                 <Checkbox
                   checked={item.found}
                   onCheckedChange={() => handleToggleFound(item.id)}
                 />
-                
+
                 <div className="flex-1 opacity-75">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium line-through">{item.name}</h4>
@@ -218,7 +233,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
                     </div>
                   </div>
                 </div>
-                
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -241,7 +256,9 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
               {searchTerm ? 'No items found' : 'Your list is empty'}
             </h3>
             <p className="text-gray-500">
-              {searchTerm ? 'Try adjusting your search terms' : 'Add items to get started with your shopping'}
+              {searchTerm
+                ? 'Try adjusting your search terms'
+                : 'Add items to get started with your shopping'}
             </p>
           </CardContent>
         </Card>
