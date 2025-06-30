@@ -2,7 +2,8 @@ import React, { useState, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Camera, Scan, Info, ShoppingCart, Star, MapPin, Zap, Eye, Upload, Loader2 } from 'lucide-react';
+import { Camera, Scan, Info, ShoppingCart, Star, MapPin, Zap, Eye, Upload, Loader2, Check } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ScannedProduct {
   id: string;
@@ -117,6 +118,8 @@ const productDatabase: ScannedProduct[] = [
 const CameraScanner: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [shoppingList, setShoppingList] = useState<ScannedProduct[]>([]);
+  const [recentlyAdded, setRecentlyAdded] = useState<string[]>([]);
   const [scannedProduct, setScannedProduct] = useState<ScannedProduct | null>(null);
   const [scanMode, setScanMode] = useState<'barcode' | 'text' | 'nutrition'>('barcode');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -193,11 +196,14 @@ const CameraScanner: React.FC = () => {
     setScannedProduct(wheatBread || productDatabase[0]);
   };
 
-  const handleAddToList = () => {
+   const handleAddToList = () => {
     if (scannedProduct) {
       setShoppingList(prev => [...prev, scannedProduct]);
-      console.log('Added to shopping list:', scannedProduct.name);
-      // You could add a toast notification here
+      setRecentlyAdded(prev => [...prev, scannedProduct.id]);
+      toast.success(`${scannedProduct.name} added to your list`);
+      setTimeout(() => {
+        setRecentlyAdded(prev => prev.filter(id => id !== scannedProduct.id));
+      }, 2000);
     }
   };
 
@@ -209,12 +215,37 @@ const CameraScanner: React.FC = () => {
       nutritionScore: product.nutritionScore
     };
     setShoppingList(prev => [...prev, altProduct]);
-    console.log('Added alternative to list:', product.name);
+    setRecentlyAdded(prev => [...prev, scannedProduct!.id]);
+    toast.success(`${product.name} added to your list`);
+    setTimeout(() => {
+      setRecentlyAdded(prev => prev.filter(id => id !== scannedProduct!.id));
+    }, 2000);
+  };
+  
+  const handleAddPairing = (pairing: ScannedProduct['recommendedPairings'][0]) => {
+    // In a real app, you would look up the actual product
+    const pairingProduct = {
+      id: `pairing-${pairing.name.toLowerCase().replace(/\s+/g, '-')}`,
+      name: pairing.name,
+      price: 0, // You would add actual price lookup
+      rating: 0,
+      reviews: 0,
+      aisle: 'Varies',
+      nutritionScore: '',
+      nutritionFacts: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, sodium: 0 },
+      ingredients: [],
+      allergens: [],
+      alternatives: [],
+      recommendedPairings: [],
+      inStock: true,
+      imageUrl: ''
+    };
+    setShoppingList(prev => [...prev, pairingProduct]);
+    toast.success(`${pairing.name} added to your list`);
   };
 
-  const handleAddPairing = (pairing: ScannedProduct['recommendedPairings'][0]) => {
-    console.log('Added pairing to list:', pairing.name);
-    // You would add your pairing product lookup logic here
+  const isRecentlyAdded = (productId: string) => {
+    return recentlyAdded.includes(productId);
   };
 
   const scanModes = [
@@ -398,14 +429,23 @@ const CameraScanner: React.FC = () => {
 
                 {/* Actions */}
                 <div className="flex space-x-2">
-                  <Button onClick={handleAddToList} className="flex-1">
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    Add to List
-                  </Button>
-                  <Button variant="outline">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    Navigate
-                  </Button>
+                   <Button 
+    onClick={handleAddToList} 
+    className="flex-1"
+    disabled={isRecentlyAdded(scannedProduct.id)}
+  >
+    {isRecentlyAdded(scannedProduct.id) ? (
+      <>
+        <Check className="w-4 h-4 mr-2" />
+        Added
+      </>
+    ) : (
+      <>
+        <ShoppingCart className="w-4 h-4 mr-2" />
+        Add to List
+      </>
+    )}
+  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -517,13 +557,18 @@ const CameraScanner: React.FC = () => {
                       </Badge>
                     </div>
                     <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="ml-2"
-                      onClick={() => handleAddAlternative(alt)}
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                    </Button>
+    variant="outline" 
+    size="sm" 
+    className="ml-2"
+    onClick={() => handleAddAlternative(alt)}
+    disabled={isRecentlyAdded(scannedProduct.id)}
+  >
+    {isRecentlyAdded(scannedProduct.id) ? (
+      <Check className="w-4 h-4" />
+    ) : (
+      <ShoppingCart className="w-4 h-4" />
+    )}
+  </Button>
                   </div>
                 ))}
               </CardContent>
@@ -544,13 +589,13 @@ const CameraScanner: React.FC = () => {
                       <h5 className="font-medium">{item.name}</h5>
                       <p className="text-sm text-gray-500 mt-1">{item.reason}</p>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleAddPairing(item)}
-                    >
-                      Add
-                    </Button>
+                     <Button 
+    variant="outline" 
+    size="sm"
+    onClick={() => handleAddPairing(item)}
+  >
+    Add
+  </Button>
                   </div>
                 ))}
               </CardContent>
@@ -575,6 +620,27 @@ const CameraScanner: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+
+      {shoppingList.length > 0 && (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle className="flex items-center space-x-2">
+          <ShoppingCart className="w-5 h-5" />
+          <span>Your Shopping List ({shoppingList.length})</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {shoppingList.map((item, index) => (
+            <div key={`${item.id}-${index}`} className="flex items-center justify-between p-2 border rounded">
+              <span className="font-medium">{item.name}</span>
+              {item.price > 0 && <span>${item.price.toFixed(2)}</span>}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )}
         )}
       </div>
     </div>
