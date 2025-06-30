@@ -1,96 +1,259 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Navigation, Clock, AlertCircle, Zap, Target } from 'lucide-react';
+import { MapPin, Navigation, Clock, AlertCircle, Zap, Target, ChevronRight } from 'lucide-react';
+
+// Define types for our grid system
+type GridCell = {
+  x: number;
+  y: number;
+  walkable: boolean;
+  section?: string;
+};
+
+type Position = {
+  x: number;
+  y: number;
+};
 
 interface StoreMapProps {
-  currentLocation: { x: number; y: number; section: string };
+  currentLocation: Position & { section: string };
   shoppingList: Array<{ id: number; name: string; found: boolean; aisle: string; price: number }>;
-  onLocationUpdate: (location: { x: number; y: number; section: string }) => void;
+  onLocationUpdate: (location: Position & { section: string }) => void;
 }
 
+const GRID_SIZE = 20; // Size of our grid (20x20)
+const CELL_SIZE = 4; // Size of each cell in percentage
+
 const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLocationUpdate }) => {
-  const [optimizedRoute, setOptimizedRoute] = useState<string[]>([]);
-  const [estimatedTime, setEstimatedTime] = useState('12 min');
-  const [isNavigating, setIsNavigating] = useState(false);
+  const [grid, setGrid] = useState<GridCell[][]>([]);
+  const [path, setPath] = useState<Position[]>([]);
+  const [destination, setDestination] = useState<Position & { section: string } | null>(null);
+  const [isSelectingDestination, setIsSelectingDestination] = useState(false);
+  const [estimatedTime, setEstimatedTime] = useState('0 min');
 
-  const storeLayout = {
-    aisles: ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'C1', 'C2', 'C3'],
-    sections: {
-      'Produce': { x: 20, y: 30, color: 'bg-gradient-to-br from-green-100 to-green-200 border-green-300' },
-      'Dairy': { x: 80, y: 40, color: 'bg-gradient-to-br from-blue-100 to-blue-200 border-blue-300' },
-      'Meat': { x: 60, y: 20, color: 'bg-gradient-to-br from-red-100 to-red-200 border-red-300' },
-      'Bakery': { x: 40, y: 70, color: 'bg-gradient-to-br from-yellow-100 to-yellow-200 border-yellow-300' },
-      'Electronics': { x: 70, y: 80, color: 'bg-gradient-to-br from-purple-100 to-purple-200 border-purple-300' },
-      'Pharmacy': { x: 90, y: 60, color: 'bg-gradient-to-br from-pink-100 to-pink-200 border-pink-300' },
-      'Restrooms': { x: 10, y: 80, color: 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300' },
-      'Checkout': { x: 50, y: 90, color: 'bg-gradient-to-br from-emerald-100 to-emerald-200 border-emerald-300' },
-      'Customer Service': { x: 85, y: 10, color: 'bg-gradient-to-br from-indigo-100 to-indigo-200 border-indigo-300' },
-    }
-  };
-
-  const pendingItems = shoppingList.filter(item => !item.found);
-
+  // Initialize the grid
   useEffect(() => {
-    // Optimize route based on store layout
-    const routes = pendingItems.map(item => item.aisle);
-    const optimized = optimizeRoute(routes);
-    setOptimizedRoute(optimized);
-    setEstimatedTime(`${Math.ceil(optimized.length * 1.5 + 3)} min`);
-  }, [shoppingList]);
+    const newGrid: GridCell[][] = [];
+    
+    // Create empty grid
+    for (let y = 0; y < GRID_SIZE; y++) {
+      const row: GridCell[] = [];
+      for (let x = 0; x < GRID_SIZE; x++) {
+        row.push({ x, y, walkable: true });
+      }
+      newGrid.push(row);
+    }
+    
+    // Mark walls and sections
+    // Horizontal aisles
+    for (let x = 3; x < 17; x++) {
+      // Aisle A (top)
+      newGrid[5][x].section = x < 8 ? 'A1' : x < 12 ? 'A2' : 'A3';
+      // Aisle B (middle)
+      newGrid[10][x].section = x < 6 ? 'B1' : x < 9 ? 'B2' : x < 12 ? 'B3' : x < 15 ? 'B4' : 'B5';
+      // Aisle C (bottom)
+      newGrid[15][x].section = x < 7 ? 'C1' : x < 12 ? 'C2' : 'C3';
+    }
+    
+    // Vertical paths between aisles
+    for (let y = 5; y <= 15; y++) {
+      newGrid[y][3].walkable = false; // Left wall
+      newGrid[y][16].walkable = false; // Right wall
+    }
+    
+    // Add sections
+    // Produce section
+    for (let x = 1; x < 3; x++) {
+      for (let y = 1; y < 5; y++) {
+        newGrid[y][x].section = 'Produce';
+        newGrid[y][x].walkable = false;
+      }
+    }
+    
+    // Dairy section
+    for (let x = 17; x < 19; x++) {
+      for (let y = 3; y < 7; y++) {
+        newGrid[y][x].section = 'Dairy';
+        newGrid[y][x].walkable = false;
+      }
+    }
+    
+    // Meat section
+    for (let x = 1; x < 3; x++) {
+      for (let y = 15; y < 19; y++) {
+        newGrid[y][x].section = 'Meat';
+        newGrid[y][x].walkable = false;
+      }
+    }
+    
+    // Checkout area
+    for (let x = 8; x < 12; x++) {
+      for (let y = 18; y < 20; y++) {
+        newGrid[y][x].section = 'Checkout';
+        newGrid[y][x].walkable = false;
+      }
+    }
+    
+    // Restrooms
+    newGrid[18][1].section = 'Restrooms';
+    newGrid[18][2].section = 'Restrooms';
+    
+    setGrid(newGrid);
+  }, []);
 
-  const optimizeRoute = (aisles: string[]): string[] => {
-    // Simple optimization: group by section and sort
-    return aisles.sort((a, b) => {
-      const aSection = a.charAt(0);
-      const bSection = b.charAt(0);
-      if (aSection !== bSection) return aSection.localeCompare(bSection);
-      return parseInt(a.slice(1)) - parseInt(b.slice(1));
-    });
-  };
-
-  const handleSectionClick = (section: string, coords: { x: number; y: number }) => {
-    onLocationUpdate({ ...coords, section });
-  };
-
-  const handleQuickNavigation = (destination: string) => {
-    const destinations = {
-      'Restrooms': { x: 10, y: 80, section: 'Restrooms' },
-      'Checkout': { x: 50, y: 90, section: 'Checkout Lanes' },
-      'Customer Service': { x: 85, y: 10, section: 'Customer Service' }
+  // A* pathfinding algorithm
+  const findPath = (start: Position, end: Position): Position[] => {
+    if (!grid.length) return [];
+    
+    // Helper function to calculate heuristic (Manhattan distance)
+    const heuristic = (a: Position, b: Position) => {
+      return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
     };
     
-    const dest = destinations[destination as keyof typeof destinations];
-    if (dest) {
-      setIsNavigating(true);
-      onLocationUpdate(dest);
-      setTimeout(() => setIsNavigating(false), 2000);
+    // Initialize open and closed sets
+    const openSet: Position[] = [start];
+    const cameFrom: { [key: string]: Position } = {};
+    const gScore: { [key: string]: number } = {};
+    const fScore: { [key: string]: number } = {};
+    
+    // Initialize scores
+    for (let y = 0; y < GRID_SIZE; y++) {
+      for (let x = 0; x < GRID_SIZE; x++) {
+        const key = `${x},${y}`;
+        gScore[key] = Infinity;
+        fScore[key] = Infinity;
+      }
     }
+    
+    gScore[`${start.x},${start.y}`] = 0;
+    fScore[`${start.x},${start.y}`] = heuristic(start, end);
+    
+    while (openSet.length > 0) {
+      // Find node in openSet with lowest fScore
+      let current = openSet[0];
+      let currentIndex = 0;
+      for (let i = 1; i < openSet.length; i++) {
+        const key = `${openSet[i].x},${openSet[i].y}`;
+        const currentKey = `${current.x},${current.y}`;
+        if (fScore[key] < fScore[currentKey]) {
+          current = openSet[i];
+          currentIndex = i;
+        }
+      }
+      
+      // If we've reached the end, reconstruct path
+      if (current.x === end.x && current.y === end.y) {
+        const path: Position[] = [current];
+        while (cameFrom[`${current.x},${current.y}`]) {
+          current = cameFrom[`${current.x},${current.y}`];
+          path.unshift(current);
+        }
+        return path;
+      }
+      
+      // Move current from openSet to closed set
+      openSet.splice(currentIndex, 1);
+      
+      // Check neighbors
+      const neighbors = [
+        { x: current.x, y: current.y - 1 }, // up
+        { x: current.x, y: current.y + 1 }, // down
+        { x: current.x - 1, y: current.y }, // left
+        { x: current.x + 1, y: current.y }, // right
+      ].filter(pos => 
+        pos.x >= 0 && pos.x < GRID_SIZE && 
+        pos.y >= 0 && pos.y < GRID_SIZE &&
+        grid[pos.y][pos.x].walkable
+      );
+      
+      for (const neighbor of neighbors) {
+        const tentativeGScore = gScore[`${current.x},${current.y}`] + 1;
+        const neighborKey = `${neighbor.x},${neighbor.y}`;
+        
+        if (tentativeGScore < gScore[neighborKey]) {
+          cameFrom[neighborKey] = current;
+          gScore[neighborKey] = tentativeGScore;
+          fScore[neighborKey] = tentativeGScore + heuristic(neighbor, end);
+          
+          if (!openSet.some(pos => pos.x === neighbor.x && pos.y === neighbor.y)) {
+            openSet.push(neighbor);
+          }
+        }
+      }
+    }
+    
+    // No path found
+    return [];
   };
 
-  const getRoutePathData = () => {
-    if (optimizedRoute.length === 0) return '';
+  // Handle clicking on the map to set destination
+  const handleMapClick = (x: number, y: number) => {
+    if (!isSelectingDestination || !grid[y] || !grid[y][x] || !grid[y][x].walkable) return;
     
-    const points = [currentLocation];
-    optimizedRoute.forEach(aisle => {
-      const aisleCoords = getAisleCoordinates(aisle);
-      points.push({ ...aisleCoords, section: `Aisle ${aisle}` });
+    const newDestination = {
+      x,
+      y,
+      section: grid[y][x].section || `Aisle ${x},${y}`
+    };
+    
+    setDestination(newDestination);
+    const newPath = findPath(
+      { x: currentLocation.x, y: currentLocation.y },
+      { x, y }
+    );
+    
+    setPath(newPath);
+    setEstimatedTime(`${newPath.length * 0.5} min`);
+    setIsSelectingDestination(false);
+  };
+
+  // Start navigation to destination
+  const startNavigation = () => {
+    if (!destination) return;
+    
+    onLocationUpdate({
+      x: destination.x,
+      y: destination.y,
+      section: destination.section
     });
     
-    let pathData = `M ${points[0].x * 4} ${points[0].y * 4}`;
-    for (let i = 1; i < points.length; i++) {
-      const prev = points[i - 1];
-      const curr = points[i];
-      
-      // Create curved path for smoother navigation
-      const midX = (prev.x * 4 + curr.x * 4) / 2;
-      const midY = (prev.y * 4 + curr.y * 4) / 2;
-      pathData += ` Q ${midX} ${midY} ${curr.x * 4} ${curr.y * 4}`;
-    }
+    // In a real app, you might animate through the path
+    setPath([]);
+    setDestination(null);
+  };
+
+  // Get section coordinates for shopping list items
+  const getAisleCoordinates = (aisle: string): Position => {
+    const aisleMap: { [key: string]: Position } = {
+      'A1': { x: 4, y: 5 }, 'A2': { x: 10, y: 5 }, 'A3': { x: 14, y: 5 },
+      'B1': { x: 4, y: 10 }, 'B2': { x: 7, y: 10 }, 'B3': { x: 10, y: 10 },
+      'B4': { x: 13, y: 10 }, 'B5': { x: 16, y: 10 },
+      'C1': { x: 4, y: 15 }, 'C2': { x: 9, y: 15 }, 'C3': { x: 14, y: 15 },
+    };
+    return aisleMap[aisle] || { x: 10, y: 10 };
+  };
+
+  // Quick navigation to common locations
+  const quickNavigate = (location: string) => {
+    const locations: { [key: string]: Position & { section: string } } = {
+      'Restrooms': { x: 1, y: 18, section: 'Restrooms' },
+      'Checkout': { x: 10, y: 19, section: 'Checkout' },
+      'Customer Service': { x: 18, y: 2, section: 'Customer Service' }
+    };
     
-    return pathData;
+    const dest = locations[location];
+    if (!dest) return;
+    
+    setDestination(dest);
+    const newPath = findPath(
+      { x: currentLocation.x, y: currentLocation.y },
+      { x: dest.x, y: dest.y }
+    );
+    
+    setPath(newPath);
+    setEstimatedTime(`${newPath.length * 0.5} min`);
   };
 
   return (
@@ -112,10 +275,10 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
               size="sm" 
               variant="secondary"
               className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-              onClick={() => setOptimizedRoute(optimizeRoute(pendingItems.map(item => item.aisle)))}
+              onClick={() => setIsSelectingDestination(!isSelectingDestination)}
             >
               <Navigation className="w-4 h-4 mr-1" />
-              Optimize Route
+              {isSelectingDestination ? 'Cancel' : 'Set Destination'}
             </Button>
           </div>
         </div>
@@ -123,111 +286,130 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
       
       <CardContent className="p-6">
         <div className="relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-6 h-96 overflow-hidden border-2 border-slate-200 shadow-inner">
-          {/* Store Layout */}
+          {/* Store Grid */}
           <div className="relative w-full h-full">
-            {/* Sections */}
-            {Object.entries(storeLayout.sections).map(([name, { x, y, color }]) => (
-              <div
-                key={name}
-                className={`absolute w-20 h-14 ${color} rounded-xl border-2 cursor-pointer hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center text-xs font-bold backdrop-blur-sm`}
-                style={{ left: `${x}%`, top: `${y}%`, transform: 'translate(-50%, -50%)' }}
-                onClick={() => handleSectionClick(name, { x, y })}
-              >
-                <span className="text-center leading-tight">{name}</span>
-              </div>
+            {/* Grid cells */}
+            {grid.map((row, y) => (
+              <React.Fragment key={y}>
+                {row.map((cell, x) => (
+                  <div
+                    key={`${x}-${y}`}
+                    className={`absolute ${cell.walkable ? 'bg-white/50' : 'bg-gray-300/50'} 
+                      ${isSelectingDestination && cell.walkable ? 'cursor-pointer hover:bg-blue-100/50' : ''}
+                      ${cell.section ? 'border border-gray-200' : ''}`}
+                    style={{
+                      left: `${x * CELL_SIZE}%`,
+                      top: `${y * CELL_SIZE}%`,
+                      width: `${CELL_SIZE}%`,
+                      height: `${CELL_SIZE}%`,
+                    }}
+                    onClick={() => handleMapClick(x, y)}
+                  >
+                    {cell.section && (
+                      <div className="absolute inset-0 flex items-center justify-center text-[6px] font-bold text-gray-600 opacity-70">
+                        {cell.section}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </React.Fragment>
             ))}
+
+            {/* Path */}
+            {path.length > 0 && (
+              <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
+                <defs>
+                  <linearGradient id="pathGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#3b82f6" />
+                    <stop offset="100%" stopColor="#8b5cf6" />
+                  </linearGradient>
+                  <marker 
+                    id="arrowhead" 
+                    markerWidth="6" 
+                    markerHeight="4" 
+                    refX="5" 
+                    refY="2" 
+                    orient="auto"
+                  >
+                    <polygon points="0 0, 6 2, 0 4" fill="url(#pathGradient)" />
+                  </marker>
+                </defs>
+                <path
+                  d={`M ${path[0].x * CELL_SIZE + CELL_SIZE/2}% ${path[0].y * CELL_SIZE + CELL_SIZE/2}% 
+                    ${path.slice(1).map(p => `L ${p.x * CELL_SIZE + CELL_SIZE/2}% ${p.y * CELL_SIZE + CELL_SIZE/2}%`).join(' ')}`}
+                  fill="none"
+                  stroke="url(#pathGradient)"
+                  strokeWidth="2"
+                  strokeDasharray="4,2"
+                  markerEnd="url(#arrowhead)"
+                />
+              </svg>
+            )}
 
             {/* Current Location */}
             <div
-              className="absolute w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full border-4 border-white shadow-xl z-20 animate-pulse"
-              style={{ 
-                left: `${currentLocation.x}%`, 
-                top: `${currentLocation.y}%`, 
-                transform: 'translate(-50%, -50%)' 
+              className="absolute w-4 h-4 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full border-2 border-white shadow-xl z-20"
+              style={{
+                left: `${currentLocation.x * CELL_SIZE + CELL_SIZE/2}%`,
+                top: `${currentLocation.y * CELL_SIZE + CELL_SIZE/2}%`,
+                transform: 'translate(-50%, -50%)',
               }}
             >
               <div className="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-75"></div>
-              <div className="absolute inset-1 bg-white rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-              </div>
             </div>
 
+            {/* Destination */}
+            {destination && (
+              <div
+                className="absolute w-4 h-4 bg-gradient-to-br from-green-500 to-green-700 rounded-full border-2 border-white shadow-xl z-20 animate-pulse"
+                style={{
+                  left: `${destination.x * CELL_SIZE + CELL_SIZE/2}%`,
+                  top: `${destination.y * CELL_SIZE + CELL_SIZE/2}%`,
+                  transform: 'translate(-50%, -50%)',
+                }}
+              />
+            )}
+
             {/* Shopping List Items */}
-            {pendingItems.map((item, index) => {
-              const aisleCoords = getAisleCoordinates(item.aisle);
+            {shoppingList.filter(item => !item.found).map((item) => {
+              const pos = getAisleCoordinates(item.aisle);
               return (
                 <div
                   key={item.id}
-                  className="absolute w-4 h-4 bg-gradient-to-br from-red-500 to-red-700 rounded-full border-2 border-white shadow-lg z-10 animate-bounce"
-                  style={{ 
-                    left: `${aisleCoords.x}%`, 
-                    top: `${aisleCoords.y}%`, 
+                  className="absolute w-3 h-3 bg-gradient-to-br from-red-500 to-red-700 rounded-full border-2 border-white shadow-lg z-15"
+                  style={{
+                    left: `${pos.x * CELL_SIZE + CELL_SIZE/2}%`,
+                    top: `${pos.y * CELL_SIZE + CELL_SIZE/2}%`,
                     transform: 'translate(-50%, -50%)',
-                    animationDelay: `${index * 0.2}s`
                   }}
                   title={item.name}
-                >
-                  <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity">
-                    {item.name}
-                  </div>
-                </div>
+                />
               );
             })}
-
-            {/* Enhanced Route Path */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none z-5">
-              <defs>
-                <linearGradient id="routeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8"/>
-                  <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.8"/>
-                </linearGradient>
-                <marker id="arrowhead" markerWidth="12" markerHeight="8" 
-                  refX="10" refY="4" orient="auto" markerUnits="strokeWidth">
-                  <polygon points="0 0, 12 4, 0 8" fill="url(#routeGradient)" />
-                </marker>
-                <filter id="glow">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                  <feMerge> 
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
-              </defs>
-              {optimizedRoute.length > 0 && (
-                <path
-                  d={getRoutePathData()}
-                  fill="none"
-                  stroke="url(#routeGradient)"
-                  strokeWidth="3"
-                  strokeDasharray="8,4"
-                  markerEnd="url(#arrowhead)"
-                  filter="url(#glow)"
-                  className="animate-pulse"
-                />
-              )}
-            </svg>
           </div>
 
-          {/* Enhanced Legend */}
+          {/* Legend */}
           <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-xl p-3 shadow-lg border border-white/50">
-            <div className="flex items-center space-x-6 text-xs font-medium">
+            <div className="flex items-center space-x-4 text-xs font-medium">
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full border-2 border-white"></div>
+                <div className="w-3 h-3 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full border border-white"></div>
                 <span className="text-gray-700">You</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-gradient-to-br from-red-500 to-red-700 rounded-full border-2 border-white"></div>
+                <div className="w-3 h-3 bg-gradient-to-br from-red-500 to-red-700 rounded-full border border-white"></div>
                 <span className="text-gray-700">Items</span>
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-6 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded"></div>
-                <span className="text-gray-700">Route</span>
-              </div>
+              {destination && (
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-gradient-to-br from-green-500 to-green-700 rounded-full border border-white"></div>
+                  <span className="text-gray-700">Destination</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Enhanced Current Status */}
+        {/* Current Status */}
         <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200">
           <div className="flex items-center justify-between">
             <div className="flex items-start space-x-4">
@@ -239,18 +421,30 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
                 <p className="text-sm text-blue-700 font-medium">{currentLocation.section}</p>
               </div>
             </div>
-            {pendingItems.length > 0 && (
+            {destination && (
               <div className="text-right">
-                <p className="text-sm font-bold text-blue-900">
-                  {pendingItems.length} items remaining
-                </p>
-                <p className="text-xs text-blue-700">Next: Aisle {pendingItems[0]?.aisle}</p>
+                <p className="text-sm font-bold text-blue-900">Destination Set</p>
+                <p className="text-xs text-blue-700">{destination.section}</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Enhanced Quick Navigation */}
+        {/* Navigation Controls */}
+        {destination && (
+          <div className="mt-4">
+            <Button 
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+              onClick={startNavigation}
+            >
+              <Navigation className="w-4 h-4 mr-2" />
+              Start Navigation
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        )}
+
+        {/* Quick Navigation */}
         <div className="mt-6 grid grid-cols-1 gap-3">
           <h3 className="font-bold text-gray-800 flex items-center space-x-2">
             <Zap className="w-4 h-4 text-yellow-500" />
@@ -260,8 +454,7 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
             <Button 
               variant="outline" 
               className="flex-col space-y-1 h-auto py-3 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 group"
-              onClick={() => handleQuickNavigation('Restrooms')}
-              disabled={isNavigating}
+              onClick={() => quickNavigate('Restrooms')}
             >
               <MapPin className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
               <span className="text-xs font-medium">Restrooms</span>
@@ -270,8 +463,7 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
             <Button 
               variant="outline" 
               className="flex-col space-y-1 h-auto py-3 hover:bg-green-50 hover:border-green-300 transition-all duration-200 group"
-              onClick={() => handleQuickNavigation('Checkout')}
-              disabled={isNavigating}
+              onClick={() => quickNavigate('Checkout')}
             >
               <Target className="w-5 h-5 text-green-600 group-hover:text-green-700" />
               <span className="text-xs font-medium">Checkout</span>
@@ -280,8 +472,7 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
             <Button 
               variant="outline" 
               className="flex-col space-y-1 h-auto py-3 hover:bg-purple-50 hover:border-purple-300 transition-all duration-200 group"
-              onClick={() => handleQuickNavigation('Customer Service')}
-              disabled={isNavigating}
+              onClick={() => quickNavigate('Customer Service')}
             >
               <AlertCircle className="w-5 h-5 text-purple-600 group-hover:text-purple-700" />
               <span className="text-xs font-medium">Help</span>
@@ -292,17 +483,5 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
     </Card>
   );
 };
-
-// Helper functions
-function getAisleCoordinates(aisle: string): { x: number; y: number } {
-  const aisleMap: { [key: string]: { x: number; y: number } } = {
-    'A1': { x: 15, y: 25 }, 'A2': { x: 25, y: 25 }, 'A3': { x: 35, y: 25 },
-    'B1': { x: 15, y: 45 }, 'B2': { x: 25, y: 45 }, 'B3': { x: 35, y: 45 },
-    'B4': { x: 45, y: 45 }, 'B5': { x: 55, y: 45 }, 'B6': { x: 65, y: 45 },
-    'B7': { x: 75, y: 45 }, 'C1': { x: 15, y: 65 }, 'C2': { x: 25, y: 65 },
-    'C3': { x: 35, y: 65 },
-  };
-  return aisleMap[aisle] || { x: 50, y: 50 };
-}
 
 export default StoreMap;
