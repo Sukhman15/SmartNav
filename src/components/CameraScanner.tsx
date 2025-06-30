@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ScannedProduct, productDatabase } from './productData';
 import { Camera, Scan, Info, ShoppingCart, Star, MapPin, Zap, Eye, Upload, Loader2 } from 'lucide-react';
 
 interface ScannedProduct {
@@ -79,91 +80,48 @@ const CameraScanner: React.FC = () => {
     }
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    
-    // Simulate API call for image processing
+  const recognizeProductFromImage = async (imageFile: File) => {
+  // Create a hash of the image name to consistently return same product for same image
+  const nameHash = Array.from(imageFile.name).reduce(
+    (hash, char) => (hash << 5) - hash + char.charCodeAt(0), 0
+  );
+  const productIndex = Math.abs(nameHash) % productDatabase.length;
+  
+  return new Promise<ScannedProduct>((resolve) => {
     setTimeout(() => {
-      simulateProductScan();
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }, 2000);
-  };
+      resolve(productDatabase[productIndex]);
+    }, 1500);
+  });
+};
+
+ const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  setIsUploading(true);
+  
+  try {
+    const recognizedProduct = await recognizeProductFromImage(file);
+    setScannedProduct(recognizedProduct);
+  } catch (error) {
+    console.error('Error recognizing product:', error);
+  } finally {
+    setIsUploading(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }
+};
 
   const simulateProductScan = () => {
-    const mockProduct: ScannedProduct = {
-      id: 'prod-123',
-      name: 'Great Value Organic Whole Wheat Bread',
-      price: 3.49,
-      rating: 4.3,
-      reviews: 127,
-      aisle: 'B7',
-      nutritionScore: 'B+',
-      nutritionFacts: {
-        calories: 110,
-        protein: 4,
-        carbs: 22,
-        fat: 1.5,
-        fiber: 3,
-        sugar: 3,
-        sodium: 180
-      },
-      ingredients: [
-        'Organic whole wheat flour', 
-        'Water', 
-        'Organic cane sugar', 
-        'Yeast', 
-        'Sea salt', 
-        'Organic sunflower oil'
-      ],
-      allergens: ['Wheat'],
-      alternatives: [
-        { 
-          name: 'Dave\'s Killer Bread Organic 21 Whole Grains', 
-          price: 4.99, 
-          savings: -1.50,
-          rating: 4.7,
-          nutritionScore: 'A-'
-        },
-        { 
-          name: 'Store Brand Whole Wheat Bread', 
-          price: 2.99, 
-          savings: 0.50,
-          rating: 3.9,
-          nutritionScore: 'B'
-        },
-        { 
-          name: 'Pepperidge Farm Whole Grain', 
-          price: 4.29, 
-          savings: -0.80,
-          rating: 4.2,
-          nutritionScore: 'B+'
-        }
-      ],
-      recommendedPairings: [
-        {
-          name: 'Organic Peanut Butter',
-          reason: 'High in protein, complements whole grains'
-        },
-        {
-          name: 'Local Honey',
-          reason: 'Natural sweetener that pairs well with whole wheat'
-        },
-        {
-          name: 'Avocado',
-          reason: 'Healthy fats that balance the carbohydrates'
-        }
-      ],
-      inStock: true,
-      imageUrl: 'https://i5.walmartimages.com/asr/1d1a0a4b-5a5c-4e3e-8b0f-5e5e5e5e5e5e.1b2b3b4b5b6b7b8b9b0b1b2b3b4b5b6b7b8b9b0b1b2b3b4b5b6b7b8b9b0'
-    };
-    setScannedProduct(mockProduct);
-  };
+  // Randomly select a product from the database
+  const randomIndex = Math.floor(Math.random() * productDatabase.length);
+  const selectedProduct = productDatabase[randomIndex];
+  
+  // For uploaded images, you might want to implement actual image recognition
+  // For demo purposes, we'll just pick a random product
+  setScannedProduct(selectedProduct);
+};
 
   const handleAddToList = () => {
     if (scannedProduct) {
