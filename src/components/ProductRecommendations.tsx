@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, TrendingUp, Percent, Heart, Plus, MapPin, X, Check, Leaf, Vegan, Wheat, Milk, Egg, Coffee } from 'lucide-react';
-import { toast } from 'sonner';
+import { Star, TrendingUp, Percent, Heart, Plus, MapPin, X, Check } from 'lucide-react';
+import { toast } from 'sonner'; // or your preferred toast library
 
 export interface Product {
   id: number;
@@ -29,7 +29,7 @@ export interface Product {
 
 interface ProductRecommendationsProps {
   onAddToList: (product: Product) => void;
-  shoppingListItems: { name: string }[];
+  shoppingListItems: { name: string }[]; // To check if items are already in list
 }
 
 const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ 
@@ -40,8 +40,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [recentlyAdded, setRecentlyAdded] = useState<number[]>([]);
 
-  const recommendations: Product[] = [
-    // Dairy
+ const recommendations: Product[] = [
     {
       id: 1,
       name: 'Organic Greek Yogurt',
@@ -52,7 +51,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
       aisle: 'C2',
       category: 'dairy',
       discount: 23,
-      reason: 'High protein, low sugar option',
+      reason: 'Based on your health preferences',
       inStock: true,
       nutrition: {
         calories: 120,
@@ -63,63 +62,23 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
     },
     {
       id: 2,
-      name: 'Almond Milk Unsweetened',
-      price: 3.49,
+      name: 'Avocado Oil Spray',
+      price: 3.99,
       rating: 4.5,
-      reviews: 289,
-      aisle: 'C3',
-      category: 'dairy',
-      reason: 'Dairy-free alternative',
+      reviews: 156,
+      aisle: 'B4',
+      category: 'cooking',
+      reason: 'Frequently bought with organic items',
       inStock: true,
       nutrition: {
-        calories: 30,
-        fat: '2.5g',
-        carbs: '1g',
-        protein: '1g',
+        calories: 0,
+        fat: '0g',
+        carbs: '0g',
+        protein: '0g',
       },
     },
-
-    // Produce
     {
       id: 3,
-      name: 'Fresh Organic Blueberries',
-      price: 5.99,
-      rating: 4.8,
-      reviews: 203,
-      aisle: 'A3',
-      category: 'produce',
-      reason: 'Antioxidant-rich superfood',
-      inStock: true,
-      nutrition: {
-        calories: 85,
-        fat: '0.5g',
-        carbs: '21g',
-        protein: '1g',
-      },
-    },
-    {
-      id: 4,
-      name: 'Organic Avocados',
-      price: 2.99,
-      originalPrice: 3.99,
-      rating: 4.6,
-      reviews: 412,
-      aisle: 'A2',
-      category: 'produce',
-      discount: 25,
-      reason: 'Healthy fats and fiber',
-      inStock: true,
-      nutrition: {
-        calories: 160,
-        fat: '15g',
-        carbs: '9g',
-        protein: '2g',
-      },
-    },
-
-    // Pantry
-    {
-      id: 5,
       name: 'Whole Grain Pasta',
       price: 2.49,
       originalPrice: 3.29,
@@ -128,7 +87,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
       aisle: 'B6',
       category: 'pantry',
       discount: 24,
-      reason: 'Higher fiber content',
+      reason: 'Popular healthy alternative',
       inStock: true,
       nutrition: {
         calories: 200,
@@ -138,136 +97,41 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
       },
     },
     {
-      id: 6,
-      name: 'Organic Quinoa',
+      id: 4,
+      name: 'Fresh Blueberries',
       price: 5.99,
-      rating: 4.7,
-      reviews: 156,
-      aisle: 'B5',
-      category: 'pantry',
-      reason: 'Complete plant protein',
-      inStock: true,
-      nutrition: {
-        calories: 220,
-        fat: '3.5g',
-        carbs: '39g',
-        protein: '8g',
-      },
-    },
-
-    // Snacks
-    {
-      id: 7,
-      name: 'Dark Chocolate Almonds',
-      price: 6.99,
-      originalPrice: 8.99,
-      rating: 4.9,
-      reviews: 532,
-      aisle: 'D4',
-      category: 'snacks',
-      discount: 22,
-      reason: 'Healthy indulgent snack',
-      inStock: true,
-      nutrition: {
-        calories: 170,
-        fat: '14g',
-        carbs: '10g',
-        protein: '5g',
-      },
-    },
-    {
-      id: 8,
-      name: 'Organic Popcorn',
-      price: 3.49,
-      rating: 4.4,
-      reviews: 187,
-      aisle: 'D3',
-      category: 'snacks',
-      reason: 'Whole grain snack option',
-      inStock: true,
-      nutrition: {
-        calories: 130,
-        fat: '7g',
-        carbs: '15g',
-        protein: '2g',
-      },
-    },
-
-    // Beverages
-    {
-      id: 9,
-      name: 'Cold Brew Coffee',
-      price: 4.99,
-      rating: 4.6,
-      reviews: 278,
-      aisle: 'E2',
-      category: 'beverages',
-      reason: 'Smooth caffeine boost',
-      inStock: true,
-      nutrition: {
-        calories: 5,
-        fat: '0g',
-        carbs: '0g',
-        protein: '0g',
-      },
-    },
-    {
-      id: 10,
-      name: 'Kombucha Variety Pack',
-      price: 12.99,
-      originalPrice: 15.99,
       rating: 4.8,
-      reviews: 341,
-      aisle: 'E3',
-      category: 'beverages',
-      discount: 19,
-      reason: 'Probiotic-rich drink',
+      reviews: 203,
+      aisle: 'A3',
+      category: 'produce',
+      reason: 'Trending superfood this week',
       inStock: true,
       nutrition: {
-        calories: 60,
-        fat: '0g',
-        carbs: '14g',
-        protein: '0g',
-      },
-    },
-
-    // Frozen
-    {
-      id: 11,
-      name: 'Organic Frozen Berries',
-      price: 8.99,
-      rating: 4.7,
-      reviews: 215,
-      aisle: 'F2',
-      category: 'frozen',
-      reason: 'Great for smoothies',
-      inStock: true,
-      nutrition: {
-        calories: 70,
-        fat: '0g',
-        carbs: '18g',
+        calories: 85,
+        fat: '0.5g',
+        carbs: '21g',
         protein: '1g',
       },
     },
     {
-      id: 12,
-      name: 'Cauliflower Rice',
-      price: 3.99,
-      originalPrice: 4.99,
-      rating: 4.5,
-      reviews: 178,
-      aisle: 'F3',
-      category: 'frozen',
+      id: 5,
+      name: 'Almond Butter',
+      price: 7.99,
+      originalPrice: 9.99,
+      rating: 4.6,
+      reviews: 445,
+      aisle: 'B5',
+      category: 'pantry',
       discount: 20,
-      reason: 'Low-carb alternative',
+      reason: 'Great with whole grain bread',
       inStock: false,
       nutrition: {
-        calories: 25,
-        fat: '0g',
-        carbs: '5g',
-        protein: '2g',
+        calories: 190,
+        fat: '18g',
+        carbs: '6g',
+        protein: '7g',
       },
-    }
+    },
   ];
 
   const categories = [
@@ -275,29 +139,17 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
     { id: 'trending', name: 'Trending', icon: TrendingUp },
     { id: 'deals', name: 'Deals', icon: Percent },
     { id: 'favorites', name: 'Favorites', icon: Heart },
-    { id: 'organic', name: 'Organic', icon: Leaf },
-    { id: 'vegan', name: 'Vegan', icon: Vegan },
-    { id: 'dairy', name: 'Dairy', icon: Milk },
-    { id: 'gluten-free', name: 'Gluten Free', icon: Wheat },
-    { id: 'produce', name: 'Produce', icon: Egg },
-    { id: 'beverages', name: 'Beverages', icon: Coffee },
   ];
+
 
   const filteredRecommendations = recommendations.filter((product) => {
     if (selectedCategory === 'all') return true;
-    if (selectedCategory === 'trending') return product.rating >= 4.5;
     if (selectedCategory === 'deals') return product.discount !== undefined;
+    if (selectedCategory === 'trending') return product.rating >= 4.5;
     if (selectedCategory === 'favorites') return product.reviews > 200;
-    if (selectedCategory === 'organic') return product.name.toLowerCase().includes('organic');
-    if (selectedCategory === 'vegan') return !['dairy'].includes(product.category);
-    if (selectedCategory === 'dairy') return product.category === 'dairy';
-    if (selectedCategory === 'gluten-free') return ['produce', 'beverages'].includes(product.category);
-    if (selectedCategory === 'produce') return product.category === 'produce';
-    if (selectedCategory === 'beverages') return product.category === 'beverages';
     return true;
   });
 
-  // Rest of the component remains the same...
   const isInShoppingList = (productId: number) => {
     return shoppingListItems.some(item => 
       recommendations.some(rec => rec.id === productId && rec.name === item.name)
@@ -338,8 +190,8 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
             <span>Recommendations</span>
           </CardTitle>
 
-          {/* Category Filters - now with horizontal scrolling */}
-          <div className="flex space-x-2 mt-4 overflow-x-auto pb-2">
+          {/* Category Filters */}
+          <div className="flex space-x-2 mt-4">
             {categories.map((category) => {
               const Icon = category.icon;
               return (
@@ -348,10 +200,10 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
                   variant={selectedCategory === category.id ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setSelectedCategory(category.id)}
-                  className="flex items-center space-x-1 flex-shrink-0"
+                  className="flex items-center space-x-1"
                 >
                   <Icon className="w-3 h-3" />
-                  <span>{category.name}</span>
+                  <span className="hidden sm:inline">{category.name}</span>
                 </Button>
               );
             })}
@@ -383,10 +235,10 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({
                 {/* Price and Rating */}
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2">
-                    <span className="font-bold text-green-600">${product.price.toFixed(2)}</span>
+                    <span className="font-bold text-green-600">${product.price}</span>
                     {product.originalPrice && (
                       <span className="text-xs text-gray-500 line-through">
-                        ${product.originalPrice.toFixed(2)}
+                        ${product.originalPrice}
                       </span>
                     )}
                   </div>
