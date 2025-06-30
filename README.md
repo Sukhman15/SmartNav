@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# Walmart idea
 
 ## Project info
 
@@ -7,8 +7,6 @@
 ## How can I edit this code?
 
 There are several ways of editing your application.
-
-**Use Lovable**
 
 Simply visit the [Lovable Project](https://lovable.dev/projects/0f32b61d-1bb7-4775-a33b-5dbc10709787) and start prompting.
 
