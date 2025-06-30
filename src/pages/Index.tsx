@@ -7,7 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Search, ShoppingCart, Camera, Mic, Navigation, Star, Clock, Zap, Wifi } from 'lucide-react';
 import StoreMap from '@/components/StoreMap';
 import AIAssistant from '@/components/AIAssistant';
-import ShoppingApp from '@/components/ShoppingApp'; // Updated import
+import ShoppingApp from '@/components/ShoppingApp'; // New import
+import ProductRecommendations from '@/components/ProductRecommendations';
+import CameraScanner from '@/components/CameraScanner';
 import VoiceInterface from '@/components/VoiceInterface';
 import InventoryTracker from '@/components/InventoryTracker';
 import UserPreferences from '@/components/UserPreferences';
@@ -63,11 +65,18 @@ const Index = () => {
               <span className="hidden sm:inline font-medium">Navigate</span>
             </TabsTrigger>
             <TabsTrigger 
-              value="shop" 
+              value="list" 
               className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
             >
               <ShoppingCart className="w-4 h-4" />
-              <span className="hidden sm:inline font-medium">Shop</span>
+              <span className="hidden sm:inline font-medium">My List</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="scan" 
+              className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+            >
+              <Camera className="w-4 h-4" />
+              <span className="hidden sm:inline font-medium">Scan</span>
             </TabsTrigger>
             <TabsTrigger 
               value="assistant" 
@@ -99,8 +108,12 @@ const Index = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="shop">
-            <ShoppingApp /> {/* Integrated ShoppingApp component */}
+          <TabsContent value="list" className="space-y-8">
+            <ShoppingApp />
+          </TabsContent>
+
+          <TabsContent value="scan">
+            <CameraScanner />
           </TabsContent>
 
           <TabsContent value="assistant">
