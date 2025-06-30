@@ -8,6 +8,8 @@ import {
   Pill, Shirt, Home, ToyBrick, BookOpen, RefreshCw
 } from 'lucide-react';
 
+
+
 type Position = {
   x: number;
   y: number;
