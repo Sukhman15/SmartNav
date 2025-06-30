@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,9 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Search, ShoppingCart, Camera, Mic, Navigation, Star, Clock, Zap, Wifi } from 'lucide-react';
 import StoreMap from '@/components/StoreMap';
 import AIAssistant from '@/components/AIAssistant';
-import ShoppingList from '@/components/ShoppingList';
-import ProductRecommendations from '@/components/ProductRecommendations';
-import CameraScanner from '@/components/CameraScanner';
+import ShoppingApp from '@/components/ShoppingApp'; // Updated import
 import VoiceInterface from '@/components/VoiceInterface';
 import InventoryTracker from '@/components/InventoryTracker';
 import UserPreferences from '@/components/UserPreferences';
@@ -18,11 +15,6 @@ import UserPreferences from '@/components/UserPreferences';
 const Index = () => {
   const [activeTab, setActiveTab] = useState('navigate');
   const [currentLocation, setCurrentLocation] = useState({ x: 50, y: 50, section: 'Entrance' });
-  const [shoppingList, setShoppingList] = useState([
-    { id: 1, name: 'Organic Apples', found: false, aisle: 'A3', price: 4.99 },
-    { id: 2, name: 'Whole Wheat Bread', found: true, aisle: 'B7', price: 3.49 },
-    { id: 3, name: 'Almond Milk', found: false, aisle: 'C2', price: 5.99 },
-  ]);
   const [isListening, setIsListening] = useState(false);
 
   return (
@@ -71,18 +63,11 @@ const Index = () => {
               <span className="hidden sm:inline font-medium">Navigate</span>
             </TabsTrigger>
             <TabsTrigger 
-              value="list" 
+              value="shop" 
               className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
             >
               <ShoppingCart className="w-4 h-4" />
-              <span className="hidden sm:inline font-medium">My List</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="scan" 
-              className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
-            >
-              <Camera className="w-4 h-4" />
-              <span className="hidden sm:inline font-medium">Scan</span>
+              <span className="hidden sm:inline font-medium">Shop</span>
             </TabsTrigger>
             <TabsTrigger 
               value="assistant" 
@@ -105,7 +90,6 @@ const Index = () => {
               <div className="lg:col-span-2">
                 <StoreMap 
                   currentLocation={currentLocation}
-                  shoppingList={shoppingList}
                   onLocationUpdate={setCurrentLocation}
                 />
               </div>
@@ -115,22 +99,8 @@ const Index = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="list" className="space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2">
-                <ShoppingList 
-                  items={shoppingList}
-                  onUpdateItems={setShoppingList}
-                />
-              </div>
-              <div>
-                <ProductRecommendations />
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="scan">
-            <CameraScanner />
+          <TabsContent value="shop">
+            <ShoppingApp /> {/* Integrated ShoppingApp component */}
           </TabsContent>
 
           <TabsContent value="assistant">
