@@ -75,7 +75,8 @@ const StoreMap: React.FC<StoreMapProps> = ({ currentLocation, shoppingList, onLo
     
     const points = [currentLocation];
     optimizedRoute.forEach(aisle => {
-      points.push(getAisleCoordinates(aisle));
+      const aisleCoords = getAisleCoordinates(aisle);
+      points.push({ ...aisleCoords, section: `Aisle ${aisle}` });
     });
     
     let pathData = `M ${points[0].x * 4} ${points[0].y * 4}`;
