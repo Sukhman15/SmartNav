@@ -3,9 +3,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
-  MapPin, Navigation, Clock, AlertCircle, Zap, Target, 
-  ChevronRight, LocateFixed, ShoppingCart, Milk, Bone, Apple, 
-  Pharmacy, Shirt, Home, ToyBrick, BookOpen
+  MapPin, Navigation, Clock, AlertCircle, Zap, Target,
+  ChevronRight, LocateFixed, ShoppingCart, Milk, Beef, Apple,
+  Pill, Shirt, Home, ToyBrick, BookOpen, RefreshCw
 } from 'lucide-react';
 
 type Position = {
