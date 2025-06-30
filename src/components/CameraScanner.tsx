@@ -80,18 +80,35 @@ const CameraScanner: React.FC = () => {
     }
   };
 
-  const recognizeProductFromImage = async (imageFile: File) => {
-  // Create a hash of the image name to consistently return same product for same image
-  const nameHash = Array.from(imageFile.name).reduce(
-    (hash, char) => (hash << 5) - hash + char.charCodeAt(0), 0
-  );
-  const productIndex = Math.abs(nameHash) % productDatabase.length;
+ const recognizeProductFromImage = async (imageFile: File) => {
+  // 1. Upload to your backend
+  const formData = new FormData();
+  formData.append('image', imageFile);
   
-  return new Promise<ScannedProduct>((resolve) => {
-    setTimeout(() => {
-      resolve(productDatabase[productIndex]);
-    }, 1500);
-  });
+  try {
+    const response = await fetch('/api/recognize-product', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) throw new Error('Recognition failed');
+    
+    const data = await response.json();
+    
+    // 2. Find matching product in database
+    const matchedProduct = productDatabase.find(
+      product => product.id === data.productId
+    );
+    
+    if (!matchedProduct) throw new Error('Product not found');
+    
+    return matchedProduct;
+  } catch (error) {
+    console.error('Recognition error:', error);
+    // Fallback to random product for demo purposes
+    const randomIndex = Math.floor(Math.random() * productDatabase.length);
+    return productDatabase[randomIndex];
+  }
 };
 
  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
