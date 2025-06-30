@@ -1,3 +1,4 @@
+// cameraScanner.tsx
 import React, { useState, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -80,20 +81,6 @@ const productDatabase: ScannedProduct[] = [
         savings: 0.20,
         rating: 4.2,
         nutritionScore: 'B+'
-      },
-      { 
-        name: 'Sara Lee 100% Whole Wheat', 
-        price: 3.49, 
-        savings: 0.00,
-        rating: 4.0,
-        nutritionScore: 'B'
-      },
-      { 
-        name: 'Pepperidge Farm Whole Grain', 
-        price: 4.29, 
-        savings: -0.80,
-        rating: 4.2,
-        nutritionScore: 'B+'
       }
     ],
     recommendedPairings: [
@@ -104,10 +91,6 @@ const productDatabase: ScannedProduct[] = [
       {
         name: 'Local Honey',
         reason: 'Natural sweetener that pairs well with whole wheat'
-      },
-      {
-        name: 'Avocado',
-        reason: 'Healthy fats that balance the carbohydrates'
       }
     ],
     inStock: true,
@@ -115,11 +98,13 @@ const productDatabase: ScannedProduct[] = [
   }
 ];
 
-const CameraScanner: React.FC = () => {
+interface CameraScannerProps {
+  onProductScanned: (product: ScannedProduct) => void;
+}
+
+const CameraScanner: React.FC<CameraScannerProps> = ({ onProductScanned }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [shoppingList, setShoppingList] = useState<ScannedProduct[]>([]);
-  const [recentlyAdded, setRecentlyAdded] = useState<string[]>([]);
   const [scannedProduct, setScannedProduct] = useState<ScannedProduct | null>(null);
   const [scanMode, setScanMode] = useState<'barcode' | 'text' | 'nutrition'>('barcode');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -158,11 +143,9 @@ const CameraScanner: React.FC = () => {
   };
 
   const recognizeProductFromImage = async (imageFile: File) => {
-    // Create URL for the uploaded image to display it
     const imageUrl = URL.createObjectURL(imageFile);
     setUploadedImage(imageUrl);
     
-    // Always return the wheat bread product for testing
     const wheatBread = productDatabase.find(p => p.id === 'prod-123');
     return new Promise<ScannedProduct>((resolve) => {
       setTimeout(() => {
@@ -180,6 +163,7 @@ const CameraScanner: React.FC = () => {
     try {
       const recognizedProduct = await recognizeProductFromImage(file);
       setScannedProduct(recognizedProduct);
+      onProductScanned(recognizedProduct);
     } catch (error) {
       console.error('Error recognizing product:', error);
     } finally {
@@ -192,59 +176,10 @@ const CameraScanner: React.FC = () => {
 
   const simulateProductScan = () => {
     const wheatBread = productDatabase.find(p => p.id === 'prod-123');
-    setScannedProduct(wheatBread || productDatabase[0]);
-  };
-
-   const handleAddToList = () => {
-    if (scannedProduct) {
-      setShoppingList(prev => [...prev, scannedProduct]);
-      setRecentlyAdded(prev => [...prev, scannedProduct.id]);
-      toast.success(`${scannedProduct.name} added to your list`);
-      setTimeout(() => {
-        setRecentlyAdded(prev => prev.filter(id => id !== scannedProduct.id));
-      }, 2000);
+    if (wheatBread) {
+      setScannedProduct(wheatBread);
+      onProductScanned(wheatBread);
     }
-  };
-
-  const handleAddAlternative = (product: ScannedProduct['alternatives'][0]) => {
-    const altProduct = {
-      ...scannedProduct!,
-      name: product.name,
-      price: product.price,
-      nutritionScore: product.nutritionScore
-    };
-    setShoppingList(prev => [...prev, altProduct]);
-    setRecentlyAdded(prev => [...prev, scannedProduct!.id]);
-    toast.success(`${product.name} added to your list`);
-    setTimeout(() => {
-      setRecentlyAdded(prev => prev.filter(id => id !== scannedProduct!.id));
-    }, 2000);
-  };
-  
-  const handleAddPairing = (pairing: ScannedProduct['recommendedPairings'][0]) => {
-    // In a real app, you would look up the actual product
-    const pairingProduct = {
-      id: `pairing-${pairing.name.toLowerCase().replace(/\s+/g, '-')}`,
-      name: pairing.name,
-      price: 0, // You would add actual price lookup
-      rating: 0,
-      reviews: 0,
-      aisle: 'Varies',
-      nutritionScore: '',
-      nutritionFacts: { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, sodium: 0 },
-      ingredients: [],
-      allergens: [],
-      alternatives: [],
-      recommendedPairings: [],
-      inStock: true,
-      imageUrl: ''
-    };
-    setShoppingList(prev => [...prev, pairingProduct]);
-    toast.success(`${pairing.name} added to your list`);
-  };
-
-  const isRecentlyAdded = (productId: string) => {
-    return recentlyAdded.includes(productId);
   };
 
   const scanModes = [
@@ -254,397 +189,142 @@ const CameraScanner: React.FC = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Camera Interface */}
-      <Card className="h-fit">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Camera className="w-5 h-5" />
-            <span>Smart Scanner</span>
-            <Badge variant="secondary" className="ml-auto">
-              AI Vision Powered
-            </Badge>
-          </CardTitle>
-          
-          <div className="flex space-x-2 mt-4">
-            {scanModes.map((mode) => {
-              const Icon = mode.icon;
-              return (
-                <Button
-                  key={mode.id}
-                  variant={scanMode === mode.id ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setScanMode(mode.id as any)}
-                  className="flex items-center space-x-1"
-                >
-                  <Icon className="w-3 h-3" />
-                  <span>{mode.name}</span>
-                </Button>
-              );
-            })}
-          </div>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
-          {/* Camera View */}
-          <div className="relative bg-gray-900 rounded-lg overflow-hidden aspect-video">
-            {isScanning ? (
-              <div className="relative w-full h-full">
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-48 h-48 border-2 border-white border-dashed rounded-lg flex items-center justify-center">
-                    <div className="text-white text-center">
-                      <Scan className="w-8 h-8 mx-auto mb-2 animate-pulse" />
-                      <p className="text-sm">Scanning...</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : scannedProduct ? (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                {uploadedImage ? (
-                  <img 
-                    src={uploadedImage} 
-                    alt="Uploaded product"
-                    className="object-contain w-full h-full"
-                  />
-                ) : (
-                  <img 
-                    src={scannedProduct.imageUrl} 
-                    alt={scannedProduct.name}
-                    className="object-contain w-full h-full"
-                  />
-                )}
-              </div>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-white">
-                <div className="text-center">
-                  <Camera className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg mb-2">Point camera at product</p>
-                  <p className="text-sm opacity-75">
-                    {scanModes.find(m => m.id === scanMode)?.description}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Controls */}
-          <div className="flex justify-center space-x-4">
-            {!isScanning ? (
-              <>
-                <Button onClick={startScanning} className="flex items-center space-x-2">
-                  <Camera className="w-4 h-4" />
-                  <span>Scan</span>
-                </Button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleUpload}
-                  accept="image/*"
-                  className="hidden"
-                  id="product-upload"
-                />
-                <Button 
-                  variant="outline" 
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="flex items-center space-x-2"
-                >
-                  {isUploading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Upload className="w-4 h-4" />
-                  )}
-                  <span>{isUploading ? 'Processing...' : 'Upload'}</span>
-                </Button>
-              </>
-            ) : (
-              <Button onClick={stopScanning} variant="destructive">
-                Stop Scanning
-              </Button>
-            )}
-          </div>
-
-          {/* Features */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="flex items-center space-x-2">
-              <Zap className="w-4 h-4 text-blue-600" />
-              <span>Instant Recognition</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Info className="w-4 h-4 text-green-600" />
-              <span>Nutrition Analysis</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Star className="w-4 h-4 text-yellow-600" />
-              <span>Price Comparison</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <ShoppingCart className="w-4 h-4 text-purple-600" />
-              <span>Quick Add to List</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Scan Results */}
-      <div className="space-y-6">
-        {scannedProduct ? (
-          <>
-            {/* Product Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="text-lg">{scannedProduct.name}</span>
-                  <Badge variant={scannedProduct.inStock ? "secondary" : "outline"}>
-                    {scannedProduct.inStock ? 'In Stock' : 'Out of Stock'}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Price and Rating */}
-                <div className="flex items-center justify-between">
-                  <div className="text-2xl font-bold text-green-600">
-                    ${scannedProduct.price.toFixed(2)}
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{scannedProduct.rating}</span>
-                    <span className="text-gray-500">({scannedProduct.reviews} reviews)</span>
-                  </div>
-                </div>
-
-                {/* Location */}
-                <div className="flex items-center space-x-2">
-                  <MapPin className="w-4 h-4 text-gray-500" />
-                  <span>Found in Aisle {scannedProduct.aisle}</span>
-                </div>
-
-                {/* Actions */}
-                <div className="flex space-x-2">
-                   <Button 
-    onClick={handleAddToList} 
-    className="flex-1"
-    disabled={isRecentlyAdded(scannedProduct.id)}
-  >
-    {isRecentlyAdded(scannedProduct.id) ? (
-      <>
-        <Check className="w-4 h-4 mr-2" />
-        Added
-      </>
-    ) : (
-      <>
-        <ShoppingCart className="w-4 h-4 mr-2" />
-        Add to List
-      </>
-    )}
-  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Nutrition Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Info className="w-5 h-5" />
-                  <span>Nutrition Information</span>
-                  <Badge variant="secondary" className="ml-auto">
-                    {scannedProduct.nutritionScore} Score
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-500">Calories</p>
-                    <p className="font-medium">{scannedProduct.nutritionFacts.calories}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-500">Protein</p>
-                    <p className="font-medium">{scannedProduct.nutritionFacts.protein}g</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-500">Carbs</p>
-                    <p className="font-medium">{scannedProduct.nutritionFacts.carbs}g</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-500">Fat</p>
-                    <p className="font-medium">{scannedProduct.nutritionFacts.fat}g</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-500">Fiber</p>
-                    <p className="font-medium">{scannedProduct.nutritionFacts.fiber}g</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-500">Sugar</p>
-                    <p className="font-medium">{scannedProduct.nutritionFacts.sugar}g</p>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <div>
-                    <h4 className="font-medium mb-2">Ingredients:</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {scannedProduct.ingredients.slice(0, 6).map((ingredient, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {ingredient}
-                        </Badge>
-                      ))}
-                      {scannedProduct.ingredients.length > 6 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{scannedProduct.ingredients.length - 6} more
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {scannedProduct.allergens.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Allergens:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {scannedProduct.allergens.map((allergen, index) => (
-                          <Badge key={index} variant="destructive" className="text-xs">
-                            {allergen}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Alternatives */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <span>Alternative Options</span>
-                  <Badge variant="outline" className="text-xs">
-                    {scannedProduct.alternatives.length} choices
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {scannedProduct.alternatives.map((alt, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex-1 min-w-0">
-                      <h5 className="font-medium truncate">{alt.name}</h5>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <div className="flex items-center space-x-1">
-                          <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm">{alt.rating}</span>
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          {alt.nutritionScore}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end ml-4">
-                      <div className="font-medium">${alt.price.toFixed(2)}</div>
-                      <Badge 
-                        variant={alt.savings > 0 ? "secondary" : "outline"}
-                        className={alt.savings > 0 ? "bg-green-100 text-green-700 text-xs" : "bg-red-100 text-red-700 text-xs"}
-                      >
-                        {alt.savings > 0 ? `Save $${alt.savings.toFixed(2)}` : `+$${Math.abs(alt.savings).toFixed(2)}`}
-                      </Badge>
-                    </div>
-                    <Button 
-    variant="outline" 
-    size="sm" 
-    className="ml-2"
-    onClick={() => handleAddAlternative(alt)}
-    disabled={isRecentlyAdded(scannedProduct.id)}
-  >
-    {isRecentlyAdded(scannedProduct.id) ? (
-      <Check className="w-4 h-4" />
-    ) : (
-      <ShoppingCart className="w-4 h-4" />
-    )}
-  </Button>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Recommended Pairings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recommended Pairings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {scannedProduct.recommendedPairings.map((item, index) => (
-                  <div key={index} className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="bg-gray-100 rounded-md p-2 flex items-center justify-center">
-                      <ShoppingCart className="w-4 h-4 text-gray-500" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h5 className="font-medium">{item.name}</h5>
-                      <p className="text-sm text-gray-500 mt-1">{item.reason}</p>
-                    </div>
-                     <Button 
-    variant="outline" 
-    size="sm"
-    onClick={() => handleAddPairing(item)}
-  >
-    Add
-  </Button>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </>
-        ) : (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Scan className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Ready to Scan</h3>
-              <p className="text-gray-500 mb-4">
-                Scan or upload an image of any product to get instant information, 
-                price comparisons, and smart recommendations.
-              </p>
-              <div className="grid grid-cols-1 gap-2 text-sm text-gray-600">
-                <p>✓ Barcode scanning for product details</p>
-                <p>✓ Text recognition for ingredients</p>
-                <p>✓ Nutrition analysis and scoring</p>
-                <p>✓ Price comparison with alternatives</p>
-                <p>✓ Allergen detection</p>
-                <p>✓ Recommended pairings</p>
-              </div>
-            </CardContent>
-          </Card>
-
-     
-        )}
-
-         {shoppingList.length > 0 && (
-    <Card className="mt-6">
+    <Card className="h-fit">
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
-          <ShoppingCart className="w-5 h-5" />
-          <span>Your Shopping List ({shoppingList.length})</span>
+          <Camera className="w-5 h-5" />
+          <span>Smart Scanner</span>
+          <Badge variant="secondary" className="ml-auto">
+            AI Vision Powered
+          </Badge>
         </CardTitle>
+        
+        <div className="flex space-x-2 mt-4">
+          {scanModes.map((mode) => {
+            const Icon = mode.icon;
+            return (
+              <Button
+                key={mode.id}
+                variant={scanMode === mode.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => setScanMode(mode.id as any)}
+                className="flex items-center space-x-1"
+              >
+                <Icon className="w-3 h-3" />
+                <span>{mode.name}</span>
+              </Button>
+            );
+          })}
+        </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          {shoppingList.map((item, index) => (
-            <div key={`${item.id}-${index}`} className="flex items-center justify-between p-2 border rounded">
-              <span className="font-medium">{item.name}</span>
-              {item.price > 0 && <span>${item.price.toFixed(2)}</span>}
+      
+      <CardContent className="space-y-4">
+        {/* Camera View */}
+        <div className="relative bg-gray-900 rounded-lg overflow-hidden aspect-video">
+          {isScanning ? (
+            <div className="relative w-full h-full">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-48 h-48 border-2 border-white border-dashed rounded-lg flex items-center justify-center">
+                  <div className="text-white text-center">
+                    <Scan className="w-8 h-8 mx-auto mb-2 animate-pulse" />
+                    <p className="text-sm">Scanning...</p>
+                  </div>
+                </div>
+              </div>
             </div>
-          ))}
+          ) : scannedProduct ? (
+            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+              {uploadedImage ? (
+                <img 
+                  src={uploadedImage} 
+                  alt="Uploaded product"
+                  className="object-contain w-full h-full"
+                />
+              ) : (
+                <img 
+                  src={scannedProduct.imageUrl} 
+                  alt={scannedProduct.name}
+                  className="object-contain w-full h-full"
+                />
+              )}
+            </div>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-white">
+              <div className="text-center">
+                <Camera className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg mb-2">Point camera at product</p>
+                <p className="text-sm opacity-75">
+                  {scanModes.find(m => m.id === scanMode)?.description}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Controls */}
+        <div className="flex justify-center space-x-4">
+          {!isScanning ? (
+            <>
+              <Button onClick={startScanning} className="flex items-center space-x-2">
+                <Camera className="w-4 h-4" />
+                <span>Scan</span>
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleUpload}
+                accept="image/*"
+                className="hidden"
+                id="product-upload"
+              />
+              <Button 
+                variant="outline" 
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="flex items-center space-x-2"
+              >
+                {isUploading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Upload className="w-4 h-4" />
+                )}
+                <span>{isUploading ? 'Processing...' : 'Upload'}</span>
+              </Button>
+            </>
+          ) : (
+            <Button onClick={stopScanning} variant="destructive">
+              Stop Scanning
+            </Button>
+          )}
+        </div>
+
+        {/* Features */}
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="flex items-center space-x-2">
+            <Zap className="w-4 h-4 text-blue-600" />
+            <span>Instant Recognition</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Info className="w-4 h-4 text-green-600" />
+            <span>Nutrition Analysis</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Star className="w-4 h-4 text-yellow-600" />
+            <span>Price Comparison</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <ShoppingCart className="w-4 h-4 text-purple-600" />
+            <span>Quick Add to List</span>
+          </div>
         </div>
       </CardContent>
     </Card>
-  )}
-      </div>
-    </div>
   );
 };
 
