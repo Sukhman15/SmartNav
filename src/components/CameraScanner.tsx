@@ -267,7 +267,7 @@ const CameraScanner: React.FC<CameraScannerProps> = ({ onProductScanned }) => {
         
         <CardContent className="space-y-4">
           {/* Camera View */}
-          <div className="relative bg-gray-900 rounded-lg overflow-hidden aspect-video">
+          <div className="relative bg-background rounded-lg overflow-hidden aspect-video">
             {isScanning ? (
               <div className="relative w-full h-full">
                 <video
@@ -277,8 +277,8 @@ const CameraScanner: React.FC<CameraScannerProps> = ({ onProductScanned }) => {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-48 h-48 border-2 border-white border-dashed rounded-lg flex items-center justify-center">
-                    <div className="text-white text-center">
+                  <div className="w-48 h-48 border-2 border-border border-dashed rounded-lg flex items-center justify-center">
+                    <div className="text-foreground text-center">
                       <Scan className="w-8 h-8 mx-auto mb-2 animate-pulse" />
                       <p className="text-sm">Scanning...</p>
                     </div>
@@ -286,7 +286,7 @@ const CameraScanner: React.FC<CameraScannerProps> = ({ onProductScanned }) => {
                 </div>
               </div>
             ) : scannedProduct ? (
-              <div className="w-full h-full flex items-center justify-center bg-gray-100">
+              <div className="w-full h-full flex items-center justify-center bg-muted dark:bg-muted/50">
                 {uploadedImage ? (
                   <img 
                     src={uploadedImage} 
@@ -302,7 +302,7 @@ const CameraScanner: React.FC<CameraScannerProps> = ({ onProductScanned }) => {
                 )}
               </div>
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-white">
+              <div className="w-full h-full flex items-center justify-center text-foreground">
                 <div className="text-center">
                   <Camera className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p className="text-lg mb-2">Point camera at product</p>

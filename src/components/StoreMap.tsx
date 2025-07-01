@@ -162,9 +162,6 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
     setGrid(newGrid);
   }, []);
 
-  
-
-
   // A* Pathfinding Algorithm (same as before)
   const findPath = useCallback((start: Position, end: Position): Position[] => {
     if (!grid.length) return [];
@@ -366,8 +363,8 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
   };
 
   return (
-    <Card className="h-full shadow-xl border-0 bg-gradient-to-br from-white to-gray-50 overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg p-4">
+    <Card className="h-full shadow-xl border-0 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-900 dark:to-indigo-900 text-white rounded-t-lg p-4">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center space-x-3">
             <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm shadow-sm">
@@ -432,7 +429,7 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
         </div>
 
         {/* Store Map */}
-        <div className="relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl p-4 h-[500px] overflow-hidden border border-slate-200/80 shadow-inner">
+        <div className="relative bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 rounded-xl p-4 h-[500px] overflow-hidden border border-slate-200/80 dark:border-gray-800 shadow-inner">
           {/* Decorative background elements */}
           <div className="absolute inset-0 opacity-10 pointer-events-none">
             <div className="absolute top-10 left-10 w-20 h-20 rounded-full bg-blue-300 blur-xl"></div>
@@ -586,7 +583,7 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
         </div>
 
         {/* Map Legend - inside map container, bottom left */}
-        <div className={`absolute bottom-4 left-4 z-30 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 transition-all duration-300 ${showLegend ? 'p-4 w-52' : 'w-10 h-10 overflow-hidden'}`}>
+        <div className={`absolute bottom-4 left-4 z-30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-300 ${showLegend ? 'p-4 w-52' : 'w-10 h-10 overflow-hidden'}`}>
           <button
             className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-600"
             onClick={() => setShowLegend(!showLegend)}
@@ -598,34 +595,34 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
               <h4 className="text-sm font-semibold text-gray-700 mb-1">Map Legend</h4>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full border-2 border-white flex items-center justify-center shrink-0">
+                  <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-800 dark:to-blue-900 rounded-full border-2 border-white dark:border-gray-700 flex items-center justify-center shrink-0">
                     <LocateFixed className="w-3 h-3 text-white" />
                   </div>
-                  <span className="text-xs text-gray-700">You</span>
+                  <span className="text-xs text-foreground">You</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-gradient-to-br from-green-500 to-green-600 rounded-full border-2 border-white flex items-center justify-center shrink-0">
+                  <div className="w-5 h-5 bg-gradient-to-br from-green-500 to-green-600 dark:from-green-800 dark:to-green-900 rounded-full border-2 border-white dark:border-gray-700 flex items-center justify-center shrink-0">
                     <Target className="w-3 h-3 text-white" />
                   </div>
-                  <span className="text-xs text-gray-700">Destination</span>
+                  <span className="text-xs text-foreground">Destination</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-gradient-to-br from-red-500 to-red-600 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shrink-0">
+                  <div className="w-5 h-5 bg-gradient-to-br from-red-500 to-red-600 dark:from-red-800 dark:to-red-900 rounded-full border-2 border-white dark:border-gray-700 flex items-center justify-center text-white text-xs font-bold shrink-0">
                     A
                   </div>
-                  <span className="text-xs text-gray-700">Item</span>
+                  <span className="text-xs text-foreground">Item</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-blue-100/80 rounded border border-blue-200 shrink-0"></div>
-                  <span className="text-xs text-gray-700">Visited</span>
+                  <div className="w-5 h-5 bg-blue-100/80 dark:bg-blue-900/60 rounded border border-blue-200 dark:border-blue-800 shrink-0"></div>
+                  <span className="text-xs text-foreground">Visited</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-purple-100/70 rounded border border-purple-200 shrink-0"></div>
-                  <span className="text-xs text-gray-700">Path</span>
+                  <div className="w-5 h-5 bg-purple-100/70 dark:bg-purple-900/60 rounded border border-purple-200 dark:border-purple-800 shrink-0"></div>
+                  <span className="text-xs text-foreground">Path</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-gray-300 rounded border border-gray-400 shrink-0"></div>
-                  <span className="text-xs text-gray-700">Wall</span>
+                  <div className="w-5 h-5 bg-gray-300 dark:bg-gray-800 rounded border border-gray-400 dark:border-gray-700 shrink-0"></div>
+                  <span className="text-xs text-foreground">Wall</span>
                 </div>
               </div>
             </div>
