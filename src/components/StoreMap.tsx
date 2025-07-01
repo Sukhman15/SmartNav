@@ -600,7 +600,7 @@ for (let y = 10; y <= 20; y += 10) {
           </div>
 
           {/* Interactive Legend */}
-         // Enhanced Legend Panel:
+          {/* Interactive Legend */}
 <div className={`absolute bottom-4 left-4 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 transition-all duration-300 ${
   showLegend ? 'p-4 w-52' : 'w-10 h-10 overflow-hidden'
 }`}>
@@ -649,7 +649,7 @@ for (let y = 10; y <= 20; y += 10) {
     </div>
   )}
 </div>
-
+         
         {/* Controls */}
         <div className="mt-4 grid grid-cols-2 gap-3">
           <Button 
