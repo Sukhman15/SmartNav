@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Star, TrendingUp, Percent, Heart, Plus, MapPin } from 'lucide-react';
+import { Star, TrendingUp, Percent, Heart, Plus, MapPin, X } from 'lucide-react';
 
 interface Product {
   id: number;
@@ -20,8 +19,14 @@ interface Product {
   image?: string;
 }
 
-const ProductRecommendations: React.FC = () => {
+interface ProductRecommendationsProps {
+  onAddToList: (product: Product) => void;
+  shoppingListItems: { name: string }[];
+}
+
+const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddToList, shoppingListItems }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [detailsProduct, setDetailsProduct] = useState<Product | null>(null);
 
   const recommendations: Product[] = [
     {
@@ -103,8 +108,8 @@ const ProductRecommendations: React.FC = () => {
   });
 
   const handleAddToList = (product: Product) => {
-    // This would typically integrate with the shopping list
-    console.log('Adding to list:', product.name);
+    if (shoppingListItems.some(item => item.name.toLowerCase() === product.name.toLowerCase())) return;
+    onAddToList(product);
   };
 
   return (
@@ -190,17 +195,54 @@ const ProductRecommendations: React.FC = () => {
                 size="sm" 
                 className="flex-1 text-xs"
                 onClick={() => handleAddToList(product)}
-                disabled={!product.inStock}
+                disabled={!product.inStock || shoppingListItems.some(item => item.name.toLowerCase() === product.name.toLowerCase())}
               >
                 <Plus className="w-3 h-3 mr-1" />
-                Add to List
+                {shoppingListItems.some(item => item.name.toLowerCase() === product.name.toLowerCase()) ? 'Added' : 'Add to List'}
               </Button>
-              <Button variant="outline" size="sm" className="text-xs">
+              <Button variant="outline" size="sm" className="text-xs" onClick={() => setDetailsProduct(product)}>
                 View Details
               </Button>
             </div>
           </div>
         ))}
+
+        {/* Product Details Modal */}
+        {detailsProduct && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+              <button className="absolute top-2 right-2 text-gray-500 hover:text-gray-700" onClick={() => setDetailsProduct(null)}>
+                <X className="w-5 h-5" />
+              </button>
+              <h3 className="text-lg font-semibold mb-2">{detailsProduct.name}</h3>
+              <div className="mb-2 text-sm text-gray-600">{detailsProduct.reason}</div>
+              <div className="mb-2 flex items-center space-x-2">
+                <span className="font-bold text-green-600 text-lg">${detailsProduct.price}</span>
+                {detailsProduct.originalPrice && (
+                  <span className="text-xs text-gray-500 line-through">${detailsProduct.originalPrice}</span>
+                )}
+                {detailsProduct.discount && (
+                  <Badge variant="destructive" className="text-xs">-{detailsProduct.discount}%</Badge>
+                )}
+              </div>
+              <div className="mb-2 flex items-center space-x-2 text-xs">
+                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                <span>{detailsProduct.rating} ({detailsProduct.reviews} reviews)</span>
+              </div>
+              <div className="mb-2 flex items-center space-x-2 text-xs">
+                <MapPin className="w-3 h-3" />
+                <span>Aisle {detailsProduct.aisle}</span>
+              </div>
+              <div className="mb-2">
+                <Badge variant={detailsProduct.inStock ? "secondary" : "outline"} className={`text-xs ${detailsProduct.inStock ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}`}>{detailsProduct.inStock ? 'In Stock' : 'Out of Stock'}</Badge>
+              </div>
+              <Button className="mt-4 w-full" onClick={() => { handleAddToList(detailsProduct); setDetailsProduct(null); }} disabled={!detailsProduct.inStock || shoppingListItems.some(item => item.name.toLowerCase() === detailsProduct.name.toLowerCase())}>
+                <Plus className="w-4 h-4 mr-1" />
+                {shoppingListItems.some(item => item.name.toLowerCase() === detailsProduct.name.toLowerCase()) ? 'Added' : 'Add to List'}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Smart Insights */}
         <div className="mt-6 p-3 bg-blue-50 rounded-lg">
