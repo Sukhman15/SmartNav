@@ -36,7 +36,6 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
   const [visitedSections, setVisitedSections] = useState<string[]>([]);
   const [showLegend, setShowLegend] = useState(true);
 
-  // Enhanced department icons with colors
   const departmentIcons: Record<string, { icon: React.ReactNode, color: string }> = {
     'Produce': { icon: <Apple className="w-3 h-3" />, color: 'bg-green-100 border-green-300' },
     'Dairy': { icon: <Milk className="w-3 h-3" />, color: 'bg-blue-100 border-blue-300' },
@@ -58,28 +57,14 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
     'Kiosk': { icon: <span className="text-xs">📱</span>, color: 'bg-gray-200 border-gray-400' }
   };
 
-  // Initialize grid with enhanced layout
   useEffect(() => {
-<<<<<<< HEAD
-    const newGrid: { x: number, y: number, walkable: boolean, data?: Position }[][] = [];
+    const newGrid: typeof grid = [];
 
-=======
-    const newGrid: {x: number, y: number, walkable: boolean, data?: Position}[][] = [];
-    
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
-    // Create empty grid with subtle pattern
     for (let y = 0; y < GRID_SIZE; y++) {
       const row = [];
       for (let x = 0; x < GRID_SIZE; x++) {
-<<<<<<< HEAD
         row.push({
-          x,
-          y,
-=======
-        row.push({ 
-          x, 
-          y, 
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
+          x, y,
           walkable: true,
           data: {
             x, y,
@@ -92,17 +77,12 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
       newGrid.push(row);
     }
 
-    // Helper function to create sections
     const createSection = (x1: number, y1: number, x2: number, y2: number, section: string, walkable = false) => {
       for (let y = y1; y <= y2; y++) {
         for (let x = x1; x <= x2; x++) {
           if (newGrid[y] && newGrid[y][x]) {
             newGrid[y][x].walkable = walkable;
-<<<<<<< HEAD
             const dept = departmentIcons[section] || { icon: null, color: 'bg-gray-100 border-gray-300' };
-=======
-            const dept = departmentIcons[section] || {icon: null, color: 'bg-gray-100 border-gray-300'};
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
             newGrid[y][x].data = {
               x, y,
               section,
@@ -115,10 +95,7 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
       }
     };
 
-    // In the grid initialization section, modify the aisle creation:
-<<<<<<< HEAD
-    // Create main aisles (vertical) with more spacing
-    for (let x = 4; x <= 26; x += 4) {  // Changed from 3 to 4 for wider spacing
+    for (let x = 4; x <= 26; x += 4) {
       for (let y = 2; y <= 25; y++) {
         if (y !== 10 && y !== 20) {
           newGrid[y][x].walkable = true;
@@ -133,31 +110,11 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
           };
         }
       }
-=======
-// Create main aisles (vertical) with more spacing
-for (let x = 4; x <= 26; x += 4) {  // Changed from 3 to 4 for wider spacing
-  for (let y = 2; y <= 25; y++) {
-    if (y !== 10 && y !== 20) {
-      newGrid[y][x].walkable = true;
-      newGrid[y][x].data = {
-        x, y,
-        section: `Aisle ${String.fromCharCode(65 + Math.floor(x/4))}${Math.floor(y/5) + 1}`,
-        type: 'aisle',
-        color: 'bg-blue-50/80 border-blue-200',
-        icon: <div className="w-full h-full absolute inset-0 flex items-center justify-center">
-          <div className="w-2 h-4/5 bg-blue-300/30 rounded-full"></div>
-        </div>
-      };
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
     }
-  }
-}
 
-<<<<<<< HEAD
-    // Create cross aisles (horizontal) with more spacing
     for (let y = 10; y <= 20; y += 10) {
-      for (let x = 2; x <= 27; x++) {  // Start from 2 instead of 1 for better spacing
-        if (x % 4 !== 0) {  // Changed from 3 to 4 to match vertical spacing
+      for (let x = 2; x <= 27; x++) {
+        if (x % 4 !== 0) {
           newGrid[y][x].walkable = true;
           newGrid[y][x].data = {
             x, y,
@@ -170,28 +127,8 @@ for (let x = 4; x <= 26; x += 4) {  // Changed from 3 to 4 for wider spacing
           };
         }
       }
-=======
-// Create cross aisles (horizontal) with more spacing
-for (let y = 10; y <= 20; y += 10) {
-  for (let x = 2; x <= 27; x++) {  // Start from 2 instead of 1 for better spacing
-    if (x % 4 !== 0) {  // Changed from 3 to 4 to match vertical spacing
-      newGrid[y][x].walkable = true;
-      newGrid[y][x].data = {
-        x, y,
-        section: `Cross Aisle ${y === 10 ? 'A' : 'B'}`,
-        type: 'aisle',
-        color: 'bg-blue-50/80 border-blue-200',
-        icon: <div className="w-full h-full absolute inset-0 flex items-center justify-center">
-          <div className="h-2 w-4/5 bg-blue-300/30 rounded-full"></div>
-        </div>
-      };
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
     }
-  }
-}
 
-
-    // Create departments with colors
     createSection(1, 1, 2, 4, 'Produce');
     createSection(4, 1, 5, 4, 'Bakery');
     createSection(7, 1, 8, 4, 'Floral');
@@ -208,13 +145,9 @@ for (let y = 10; y <= 20; y += 10) {
     createSection(10, 21, 20, 25, 'Checkout');
     createSection(1, 21, 3, 23, 'Restrooms');
     createSection(25, 21, 28, 23, 'Customer Service');
-
-    // Add some decorative obstacles
     createSection(15, 15, 17, 17, 'Display', false);
     createSection(22, 5, 24, 7, 'Kiosk', false);
 
-    // Add decorative elements
-    // Store entrance
     for (let x = 14; x <= 16; x++) {
       newGrid[0][x].walkable = true;
       newGrid[0][x].data = {
@@ -228,6 +161,9 @@ for (let y = 10; y <= 20; y += 10) {
 
     setGrid(newGrid);
   }, []);
+
+  
+
 
   // A* Pathfinding Algorithm (same as before)
   const findPath = useCallback((start: Position, end: Position): Position[] => {
@@ -282,13 +218,8 @@ for (let y = 10; y <= 20; y += 10) {
         { x: current.x + 1, y: current.y - 1 },
         { x: current.x - 1, y: current.y + 1 },
         { x: current.x + 1, y: current.y + 1 },
-<<<<<<< HEAD
       ].filter(pos =>
         pos.x >= 0 && pos.x < GRID_SIZE &&
-=======
-      ].filter(pos => 
-        pos.x >= 0 && pos.x < GRID_SIZE && 
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
         pos.y >= 0 && pos.y < GRID_SIZE &&
         grid[pos.y][pos.x].walkable
       );
@@ -298,11 +229,7 @@ for (let y = 10; y <= 20; y += 10) {
           ...neighbor,
           section: `Aisle ${neighbor.x},${neighbor.y}`
         };
-<<<<<<< HEAD
         const tentativeGScore = gScore[getKey(current)] +
-=======
-        const tentativeGScore = gScore[getKey(current)] + 
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
           (neighbor.x !== current.x && neighbor.y !== current.y ? 1.414 : 1);
 
         if (tentativeGScore < gScore[getKey(neighborPos)]) {
@@ -425,11 +352,6 @@ for (let y = 10; y <= 20; y += 10) {
         }
       }
     }
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
     const aisleLetter = aisle.charAt(0);
     const aisleNumber = parseInt(aisle.slice(1)) || 1;
     const x = 3 + (aisleLetter.charCodeAt(0) - 65) * 3;
@@ -461,13 +383,8 @@ for (let y = 10; y <= 20; y += 10) {
               <Clock className="w-3.5 h-3.5" />
               <span className="font-medium">{estimatedTime}</span>
             </Badge>
-<<<<<<< HEAD
             <Button
               size="sm"
-=======
-            <Button 
-              size="sm" 
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
               variant="ghost"
               className="bg-white/10 hover:bg-white/20 text-white border-white/20 shadow-sm"
               onClick={resetPath}
@@ -478,11 +395,6 @@ for (let y = 10; y <= 20; y += 10) {
           </div>
         </div>
       </CardHeader>
-<<<<<<< HEAD
-
-=======
-      
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
       <CardContent className="p-4">
         {/* Instructions */}
         <div className="mb-4 p-3 bg-blue-50/80 rounded-lg border border-blue-200/80 backdrop-blur-sm shadow-inner">
@@ -526,11 +438,6 @@ for (let y = 10; y <= 20; y += 10) {
             <div className="absolute top-10 left-10 w-20 h-20 rounded-full bg-blue-300 blur-xl"></div>
             <div className="absolute bottom-10 right-10 w-24 h-24 rounded-full bg-purple-300 blur-xl"></div>
           </div>
-<<<<<<< HEAD
-
-=======
-          
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
           {/* Grid */}
           <div className="relative w-full h-full">
             {grid.map((row, y) => (
@@ -540,11 +447,6 @@ for (let y = 10; y <= 20; y += 10) {
                   const isVisited = visitedSections.includes(cell.data?.section || '');
                   const isCurrent = currentPosition?.x === x && currentPosition?.y === y;
                   const isDest = destination?.x === x && destination?.y === y;
-<<<<<<< HEAD
-
-=======
-                  
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
                   return (
                     <div
                       key={`${x}-${y}`}
@@ -594,21 +496,12 @@ for (let y = 10; y <= 20; y += 10) {
                     <stop offset="50%" stopColor="#7c3aed" />
                     <stop offset="100%" stopColor="#8b5cf6" />
                   </linearGradient>
-<<<<<<< HEAD
                   <marker
                     id="arrowhead"
                     markerWidth="8"
                     markerHeight="6"
                     refX="6"
                     refY="3"
-=======
-                  <marker 
-                    id="arrowhead" 
-                    markerWidth="8" 
-                    markerHeight="6" 
-                    refX="6" 
-                    refY="3" 
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
                     orient="auto"
                   >
                     <polygon points="0 0, 8 3, 0 6" fill="url(#pathGradient)" />
@@ -627,13 +520,8 @@ for (let y = 10; y <= 20; y += 10) {
                 {path.map((point, index) => (
                   <circle
                     key={index}
-<<<<<<< HEAD
                     cx={`${point.x * CELL_SIZE + CELL_SIZE / 2}%`}
                     cy={`${point.y * CELL_SIZE + CELL_SIZE / 2}%`}
-=======
-                    cx={`${point.x * CELL_SIZE + CELL_SIZE/2}%`}
-                    cy={`${point.y * CELL_SIZE + CELL_SIZE/2}%`}
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
                     r="1.2%"
                     fill="url(#pathGradient)"
                     stroke="white"
@@ -697,9 +585,8 @@ for (let y = 10; y <= 20; y += 10) {
           </div>
         </div>
 
-<<<<<<< HEAD
-        {/* Map Legend - now in normal flow above controls */}
-        <div className={`bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 transition-all duration-300 mb-4 ${showLegend ? 'p-4 w-52' : 'w-10 h-10 overflow-hidden'}`}>
+        {/* Map Legend - inside map container, bottom left */}
+        <div className={`absolute bottom-4 left-4 z-30 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 transition-all duration-300 ${showLegend ? 'p-4 w-52' : 'w-10 h-10 overflow-hidden'}`}>
           <button
             className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-600"
             onClick={() => setShowLegend(!showLegend)}
@@ -723,6 +610,12 @@ for (let y = 10; y <= 20; y += 10) {
                   <span className="text-xs text-gray-700">Destination</span>
                 </div>
                 <div className="flex items-center space-x-3">
+                  <div className="w-5 h-5 bg-gradient-to-br from-red-500 to-red-600 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shrink-0">
+                    A
+                  </div>
+                  <span className="text-xs text-gray-700">Item</span>
+                </div>
+                <div className="flex items-center space-x-3">
                   <div className="w-5 h-5 bg-blue-100/80 rounded border border-blue-200 shrink-0"></div>
                   <span className="text-xs text-gray-700">Visited</span>
                 </div>
@@ -730,62 +623,15 @@ for (let y = 10; y <= 20; y += 10) {
                   <div className="w-5 h-5 bg-purple-100/70 rounded border border-purple-200 shrink-0"></div>
                   <span className="text-xs text-gray-700">Path</span>
                 </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-5 h-5 bg-gray-300 rounded border border-gray-400 shrink-0"></div>
+                  <span className="text-xs text-gray-700">Wall</span>
+                </div>
               </div>
             </div>
           )}
-=======
-          {/* Interactive Legend */}
-          {/* Interactive Legend */}
-<div className={`absolute bottom-4 left-4 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 transition-all duration-300 ${
-  showLegend ? 'p-4 w-52' : 'w-10 h-10 overflow-hidden'
-}`}>
-  <button 
-    className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-600"
-    onClick={() => setShowLegend(!showLegend)}
-  >
-    {showLegend ? <X className="w-4 h-4" /> : <HelpCircle className="w-4 h-4" />}
-  </button>
-  
-  {showLegend && (
-    <div className="space-y-3">
-      <h4 className="text-sm font-semibold text-gray-700 mb-1">Map Legend</h4>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex items-center space-x-3">
-          <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full border-2 border-white flex items-center justify-center shrink-0">
-            <LocateFixed className="w-3 h-3 text-white" />
-          </div>
-          <span className="text-xs text-gray-700">You</span>
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
         </div>
-        <div className="flex items-center space-x-3">
-          <div className="w-5 h-5 bg-gradient-to-br from-green-500 to-green-600 rounded-full border-2 border-white flex items-center justify-center shrink-0">
-            <Target className="w-3 h-3 text-white" />
-          </div>
-          <span className="text-xs text-gray-700">Destination</span>
-        </div>
-        <div className="flex items-center space-x-3">
-          <div className="w-5 h-5 bg-gradient-to-br from-red-500 to-red-600 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shrink-0">
-            A
-          </div>
-          <span className="text-xs text-gray-700">Item</span>
-        </div>
-        <div className="flex items-center space-x-3">
-          <div className="w-5 h-5 bg-blue-100/80 rounded border border-blue-200 shrink-0"></div>
-          <span className="text-xs text-gray-700">Visited</span>
-        </div>
-        <div className="flex items-center space-x-3">
-          <div className="w-5 h-5 bg-purple-100/70 rounded border border-purple-200 shrink-0"></div>
-          <span className="text-xs text-gray-700">Path</span>
-        </div>
-        <div className="flex items-center space-x-3">
-          <div className="w-5 h-5 bg-gray-300 rounded border border-gray-400 shrink-0"></div>
-          <span className="text-xs text-gray-700">Wall</span>
-        </div>
-      </div>
-    </div>
-  )}
-</div>
-         
+
         {/* Controls */}
         <div className="mt-4 grid grid-cols-2 gap-3">
           <Button
@@ -806,15 +652,9 @@ for (let y = 10; y <= 20; y += 10) {
               </>
             )}
           </Button>
-<<<<<<< HEAD
 
           <Button
             variant="outline"
-=======
-          
-          <Button 
-            variant="outline" 
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
             className="w-full h-11 shadow-sm border-gray-300 hover:border-blue-300"
             onClick={() => {
               if (currentPosition && destination) {
@@ -837,13 +677,8 @@ for (let y = 10; y <= 20; y += 10) {
             <span>Quick Navigation</span>
           </h3>
           <div className="grid grid-cols-4 gap-3">
-<<<<<<< HEAD
             <Button
               variant="outline"
-=======
-            <Button 
-              variant="outline" 
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
               className="flex-col space-y-1 h-auto py-3 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 group"
               onClick={() => quickNavigate('Entrance')}
             >
@@ -869,13 +704,8 @@ for (let y = 10; y <= 20; y += 10) {
               <span className="text-xs font-medium">Service</span>
             </Button>
 
-<<<<<<< HEAD
             <Button
               variant="outline"
-=======
-            <Button 
-              variant="outline" 
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
               className="flex-col space-y-1 h-auto py-3 hover:bg-teal-50 hover:border-teal-300 transition-all duration-200 group"
               onClick={() => quickNavigate('Restrooms')}
             >
@@ -894,13 +724,8 @@ for (let y = 10; y <= 20; y += 10) {
             </h4>
             <div className="flex overflow-x-auto pb-2 space-x-2 scrollbar-hide">
               {path.map((step, index) => (
-<<<<<<< HEAD
                 <div
                   key={index}
-=======
-                <div 
-                  key={index} 
->>>>>>> ee9071acf0290e9335dbbc2df980e76447f99f1b
                   className="flex-shrink-0 bg-white/90 p-2 rounded-lg border border-blue-200/70 shadow-xs flex items-center space-x-2"
                 >
                   <span className="text-xs font-bold text-blue-600 bg-blue-100/50 rounded-full w-5 h-5 flex items-center justify-center">
@@ -917,7 +742,6 @@ for (let y = 10; y <= 20; y += 10) {
             </div>
           </div>
         )}
-          </div>
       </CardContent>
     </Card>
   );
