@@ -59,7 +59,6 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
 
   useEffect(() => {
     const newGrid: typeof grid = [];
-    const newGrid: typeof grid = [];
 
     for (let y = 0; y < GRID_SIZE; y++) {
       const row = [];
