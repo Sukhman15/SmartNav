@@ -13,6 +13,7 @@ import CameraScanner from '@/components/CameraScanner';
 import VoiceInterface from '@/components/VoiceInterface';
 import InventoryTracker from '@/components/InventoryTracker';
 import UserPreferences from '@/components/UserPreferences';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('navigate');
@@ -25,9 +26,9 @@ const Index = () => {
   const [isListening, setIsListening] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-white via-gray-100 to-blue-100 dark:from-gray-900 dark:via-gray-950 dark:to-blue-950 bg-background text-foreground">
       {/* Enhanced Header */}
-      <div className="bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20 sticky top-0 z-50">
+      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg shadow-lg border-b border-gray-200/60 dark:border-gray-800/60 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -35,15 +36,16 @@ const Index = () => {
                 <Navigation className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                   SmartNav Pro
                 </h1>
-                <p className="text-sm text-gray-600 font-medium">AI-Powered Store Assistant</p>
+                <p className="text-sm text-gray-300 font-medium">AI-Powered Store Assistant</p>
               </div>
+              <ThemeToggle />
             </div>
             
             <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-3 text-sm text-gray-700 bg-gray-50 px-4 py-2 rounded-full">
+              <div className="flex items-center space-x-3 text-sm text-gray-200 bg-gray-800 px-4 py-2 rounded-full">
                 <MapPin className="w-4 h-4 text-blue-600" />
                 <span className="font-medium">Walmart Supercenter - Main St</span>
               </div>
@@ -61,38 +63,38 @@ const Index = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-5 bg-white/70 backdrop-blur-sm border border-white/20 shadow-lg rounded-2xl p-1">
+          <TabsList className="grid w-full grid-cols-5 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border border-gray-200/60 dark:border-gray-800/60 shadow-lg rounded-2xl p-1">
             <TabsTrigger 
               value="navigate" 
-              className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 dark:data-[state=active]:from-blue-800 dark:data-[state=active]:to-purple-900 data-[state=active]:text-foreground data-[state=active]:shadow-lg transition-all duration-300"
             >
               <MapPin className="w-4 h-4" />
               <span className="hidden sm:inline font-medium">Navigate</span>
             </TabsTrigger>
             <TabsTrigger 
               value="list" 
-              className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 dark:data-[state=active]:from-green-800 dark:data-[state=active]:to-emerald-900 data-[state=active]:text-foreground data-[state=active]:shadow-lg transition-all duration-300"
             >
               <ShoppingCart className="w-4 h-4" />
               <span className="hidden sm:inline font-medium">My List</span>
             </TabsTrigger>
             <TabsTrigger 
               value="scan" 
-              className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 dark:data-[state=active]:from-orange-900 dark:data-[state=active]:to-red-900 data-[state=active]:text-foreground data-[state=active]:shadow-lg transition-all duration-300"
             >
               <Camera className="w-4 h-4" />
               <span className="hidden sm:inline font-medium">Scan</span>
             </TabsTrigger>
             <TabsTrigger 
               value="assistant" 
-              className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 dark:data-[state=active]:from-purple-900 dark:data-[state=active]:to-pink-900 data-[state=active]:text-foreground data-[state=active]:shadow-lg transition-all duration-300"
             >
               <Zap className="w-4 h-4" />
               <span className="hidden sm:inline font-medium">AI Help</span>
             </TabsTrigger>
             <TabsTrigger 
               value="profile" 
-              className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300"
+              className="flex items-center space-x-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-500 dark:data-[state=active]:from-indigo-900 dark:data-[state=active]:to-purple-900 data-[state=active]:text-foreground data-[state=active]:shadow-lg transition-all duration-300"
             >
               <Star className="w-4 h-4" />
               <span className="hidden sm:inline font-medium">Profile</span>
