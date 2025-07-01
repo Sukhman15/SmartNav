@@ -760,6 +760,7 @@ for (let y = 10; y <= 20; y += 10) {
             </div>
           </div>
         )}
+          </div>
       </CardContent>
     </Card>
   );
