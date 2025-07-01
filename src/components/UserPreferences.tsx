@@ -32,9 +32,9 @@ interface Allergy {
 
 const UserPreferences: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile>({
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@email.com',
-    memberSince: 'March 2023',
+    name: 'Sukhman Saini',
+    email: 'sukhmansaini1504@email.com',
+    memberSince: 'March 2025',
     totalVisits: 47,
     favoriteStore: 'Walmart Supercenter - Main St'
   });
@@ -43,14 +43,14 @@ const UserPreferences: React.FC = () => {
     { id: 'organic', name: 'Organic Products', active: true, icon: '🌱' },
     { id: 'vegetarian', name: 'Vegetarian', active: true, icon: '🥗' },
     { id: 'gluten-free', name: 'Gluten-Free', active: false, icon: '🚫' },
-    { id: 'low-sodium', name: 'Low Sodium', active: true, icon: '🧂' },
+    { id: 'low-sodium', name: 'Low Sodium', active: false, icon: '🧂' },
     { id: 'sugar-free', name: 'Sugar-Free', active: false, icon: '🍯' },
     { id: 'keto', name: 'Keto-Friendly', active: false, icon: '🥑' }
   ]);
 
   const [allergies, setAllergies] = useState<Allergy[]>([
     { id: 'nuts', name: 'Tree Nuts', severity: 'severe' },
-    { id: 'dairy', name: 'Dairy Products', severity: 'mild' }
+    { id: 'spice', name: 'Spicy Products', severity: 'mild' }
   ]);
 
   const [notifications, setNotifications] = useState({
@@ -139,7 +139,7 @@ const UserPreferences: React.FC = () => {
                   <Input
                     id="budget"
                     type="number"
-                    placeholder="Enter weekly budget"
+                    placeholder="500"
                   />
                 </div>
               </div>
@@ -335,9 +335,9 @@ const UserPreferences: React.FC = () => {
                 <div>
                   <Label htmlFor="units">Measurement Units</Label>
                   <select className="w-full mt-1 p-2 border rounded-md">
-                    <option>Imperial (lbs, oz)</option>
                     <option>Metric (kg, g)</option>
-                  </select>
+                    <option>Imperial (lbs, oz)</option>
+                        </select>
                 </div>
               </div>
 
@@ -376,7 +376,7 @@ const UserPreferences: React.FC = () => {
                     <h4 className="font-medium">Voice Activation</h4>
                     <p className="text-sm text-gray-600">Enable "Hey SmartNav" wake word</p>
                   </div>
-                  <Switch />
+                  <Switch defaultChecked />
                 </div>
                 
                 <div className="flex items-center justify-between">

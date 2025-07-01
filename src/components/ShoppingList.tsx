@@ -1,13 +1,21 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ShoppingCart, Plus, MapPin, Search, Trash2, Clock, DollarSign } from 'lucide-react';
+import {
+  ShoppingCart,
+  Plus,
+  MapPin,
+  Search,
+  Trash2,
+  Clock,
+  DollarSign,
+} from 'lucide-react';
+import { toast } from 'sonner'; // or your preferred toast library
 
-interface ShoppingItem {
+export interface ShoppingItem {
   id: number;
   name: string;
   found: boolean;
@@ -16,20 +24,79 @@ interface ShoppingItem {
   category?: string;
   inStock?: boolean;
   alternatives?: string[];
+  imageUrl?: string;
+  nutritionScore?: string;
 }
 
 interface ShoppingListProps {
   items: ShoppingItem[];
   onUpdateItems: (items: ShoppingItem[]) => void;
+  scannedProduct?: {
+    name: string;
+    price: number;
+    aisle: string;
+    inStock: boolean;
+    imageUrl: string;
+    nutritionScore?: string;
+  } | null;
+  recommendedPairings?: {
+    name: string;
+    price: number;
+    reason: string;
+  }[];
 }
 
-const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => {
+const ShoppingList: React.FC<ShoppingListProps> = ({ 
+  items, 
+  onUpdateItems, 
+  scannedProduct,
+  recommendedPairings 
+}) => {
   const [newItem, setNewItem] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showRecommendations, setShowRecommendations] = useState(false);
+
+  // Add scanned product to list when available
+  useEffect(() => {
+    if (scannedProduct && !items.some(item => item.name === scannedProduct.name)) {
+      handleAddScannedProduct(scannedProduct);
+    }
+  }, [scannedProduct]);
+
+  const handleAddScannedProduct = (product: NonNullable<typeof scannedProduct>) => {
+    const newShoppingItem: ShoppingItem = {
+      id: Date.now(),
+      name: product.name,
+      found: false,
+      aisle: product.aisle,
+      price: product.price,
+      inStock: product.inStock,
+      imageUrl: product.imageUrl,
+      nutritionScore: product.nutritionScore,
+    };
+
+    onUpdateItems([...items, newShoppingItem]);
+    toast.success(`${product.name} added to your list`);
+  };
+
+  const handleAddRecommendedItem = (product: { name: string; price: number }) => {
+    const newShoppingItem: ShoppingItem = {
+      id: Date.now(),
+      name: product.name,
+      found: false,
+      aisle: 'TBD',
+      price: product.price,
+      inStock: true,
+    };
+
+    onUpdateItems([...items, newShoppingItem]);
+    toast.success(`${product.name} added to your list`);
+    setShowRecommendations(false);
+  };
 
   const handleAddItem = () => {
     if (!newItem.trim()) return;
-    
+
     const newShoppingItem: ShoppingItem = {
       id: Date.now(),
       name: newItem,
@@ -37,29 +104,36 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
       aisle: 'TBD',
       price: 0,
       category: 'General',
-      inStock: true
+      inStock: true,
     };
-    
+
     onUpdateItems([...items, newShoppingItem]);
     setNewItem('');
+    toast.success(`${newItem} added to your list`);
   };
 
   const handleToggleFound = (id: number) => {
-    onUpdateItems(items.map(item => 
-      item.id === id ? { ...item, found: !item.found } : item
-    ));
+    onUpdateItems(
+      items.map((item) =>
+        item.id === id ? { ...item, found: !item.found } : item
+      )
+    );
   };
 
   const handleRemoveItem = (id: number) => {
-    onUpdateItems(items.filter(item => item.id !== id));
+    const item = items.find(i => i.id === id);
+    if (item) {
+      onUpdateItems(items.filter((item) => item.id !== id));
+      toast.error(`${item.name} removed from list`);
+    }
   };
 
-  const filteredItems = items.filter(item =>
+  const filteredItems = items.filter((item) =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const foundItems = filteredItems.filter(item => item.found);
-  const pendingItems = filteredItems.filter(item => !item.found);
+  const foundItems = filteredItems.filter((item) => item.found);
+  const pendingItems = filteredItems.filter((item) => !item.found);
   const totalPrice = items.reduce((sum, item) => sum + item.price, 0);
   const estimatedTime = Math.ceil(pendingItems.length * 2) + 5; // 2 min per item + 5 min base
 
@@ -105,7 +179,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
 
       {/* Add Item */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 space-y-4">
           <div className="flex space-x-2">
             <Input
               value={newItem}
@@ -119,6 +193,41 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
               Add
             </Button>
           </div>
+
+          {recommendedPairings && recommendedPairings.length > 0 && (
+            <div className="space-y-2">
+              <Button 
+                variant="link" 
+                size="sm" 
+                className="text-blue-600 p-0 h-auto"
+                onClick={() => setShowRecommendations(!showRecommendations)}
+              >
+                {showRecommendations ? 'Hide' : 'Show'} recommended items ({recommendedPairings.length})
+              </Button>
+              
+              {showRecommendations && (
+                <div className="space-y-2">
+                  {recommendedPairings.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 border rounded">
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        {item.price > 0 && (
+                          <p className="text-sm text-gray-500">${item.price.toFixed(2)}</p>
+                        )}
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleAddRecommendedItem(item)}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -144,12 +253,15 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
           </CardHeader>
           <CardContent className="space-y-3">
             {pendingItems.map((item) => (
-              <div key={item.id} className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+              <div
+                key={item.id}
+                className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50"
+              >
                 <Checkbox
                   checked={item.found}
                   onCheckedChange={() => handleToggleFound(item.id)}
                 />
-                
+
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium">{item.name}</h4>
@@ -163,7 +275,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
                       </Badge>
                     </div>
                   </div>
-                  
+
                   {item.alternatives && item.alternatives.length > 0 && (
                     <div className="mt-1">
                       <p className="text-xs text-gray-500">
@@ -172,7 +284,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
                     </div>
                   )}
                 </div>
-                
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -198,12 +310,15 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
           </CardHeader>
           <CardContent className="space-y-3">
             {foundItems.map((item) => (
-              <div key={item.id} className="flex items-center space-x-3 p-3 border rounded-lg bg-green-50">
+              <div
+                key={item.id}
+                className="flex items-center space-x-3 p-3 border rounded-lg bg-green-50"
+              >
                 <Checkbox
                   checked={item.found}
                   onCheckedChange={() => handleToggleFound(item.id)}
                 />
-                
+
                 <div className="flex-1 opacity-75">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium line-through">{item.name}</h4>
@@ -218,7 +333,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
                     </div>
                   </div>
                 </div>
-                
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -241,7 +356,9 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ items, onUpdateItems }) => 
               {searchTerm ? 'No items found' : 'Your list is empty'}
             </h3>
             <p className="text-gray-500">
-              {searchTerm ? 'Try adjusting your search terms' : 'Add items to get started with your shopping'}
+              {searchTerm
+                ? 'Try adjusting your search terms'
+                : 'Add items to get started with your shopping'}
             </p>
           </CardContent>
         </Card>

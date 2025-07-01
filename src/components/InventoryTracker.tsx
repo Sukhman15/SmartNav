@@ -44,9 +44,9 @@ const InventoryTracker: React.FC = () => {
       id: '3',
       name: 'Almond Milk',
       aisle: 'C2',
-      stock: 0,
+      stock: 5,
       maxStock: 30,
-      status: 'out-of-stock',
+      status: 'low-stock',
       lastUpdated: new Date(Date.now() - 30 * 60 * 1000),
       trend: 'down',
       estimatedRestock: new Date(Date.now() + 4 * 60 * 60 * 1000)
@@ -55,9 +55,9 @@ const InventoryTracker: React.FC = () => {
       id: '4',
       name: 'Greek Yogurt',
       aisle: 'C2',
-      stock: 25,
+      stock: 0,
       maxStock: 40,
-      status: 'in-stock',
+      status: 'out-of-stock',
       lastUpdated: new Date(Date.now() - 2 * 60 * 1000),
       trend: 'up'
     }
