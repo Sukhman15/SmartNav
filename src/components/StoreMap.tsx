@@ -100,41 +100,43 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
       }
     };
 
-    // Create main aisles (vertical) with decorative styling
-    for (let x = 3; x <= 27; x += 3) {
-      for (let y = 2; y <= 25; y++) {
-        if (y !== 10 && y !== 20) {
-          newGrid[y][x].walkable = true;
-          newGrid[y][x].data = {
-            x, y,
-            section: `Aisle ${String.fromCharCode(65 + Math.floor(x/3))}${Math.floor(y/5) + 1}`,
-            type: 'aisle',
-            color: 'bg-blue-50/70 border-blue-100',
-            icon: <div className="w-full h-full absolute inset-0 flex items-center justify-center">
-              <div className="w-1 h-3/4 bg-blue-200/50 rounded-full"></div>
-            </div>
-          };
-        }
-      }
+    // In the grid initialization section, modify the aisle creation:
+// Create main aisles (vertical) with more spacing
+for (let x = 4; x <= 26; x += 4) {  // Changed from 3 to 4 for wider spacing
+  for (let y = 2; y <= 25; y++) {
+    if (y !== 10 && y !== 20) {
+      newGrid[y][x].walkable = true;
+      newGrid[y][x].data = {
+        x, y,
+        section: `Aisle ${String.fromCharCode(65 + Math.floor(x/4))}${Math.floor(y/5) + 1}`,
+        type: 'aisle',
+        color: 'bg-blue-50/80 border-blue-200',
+        icon: <div className="w-full h-full absolute inset-0 flex items-center justify-center">
+          <div className="w-2 h-4/5 bg-blue-300/30 rounded-full"></div>
+        </div>
+      };
     }
+  }
+}
 
-    // Create cross aisles (horizontal) with decorative styling
-    for (let y = 10; y <= 20; y += 10) {
-      for (let x = 1; x <= 28; x++) {
-        if (x % 3 !== 0) {
-          newGrid[y][x].walkable = true;
-          newGrid[y][x].data = {
-            x, y,
-            section: `Cross Aisle ${y === 10 ? 'A' : 'B'}`,
-            type: 'aisle',
-            color: 'bg-blue-50/70 border-blue-100',
-            icon: <div className="w-full h-full absolute inset-0 flex items-center justify-center">
-              <div className="h-1 w-3/4 bg-blue-200/50 rounded-full"></div>
-            </div>
-          };
-        }
-      }
+// Create cross aisles (horizontal) with more spacing
+for (let y = 10; y <= 20; y += 10) {
+  for (let x = 2; x <= 27; x++) {  // Start from 2 instead of 1 for better spacing
+    if (x % 4 !== 0) {  // Changed from 3 to 4 to match vertical spacing
+      newGrid[y][x].walkable = true;
+      newGrid[y][x].data = {
+        x, y,
+        section: `Cross Aisle ${y === 10 ? 'A' : 'B'}`,
+        type: 'aisle',
+        color: 'bg-blue-50/80 border-blue-200',
+        icon: <div className="w-full h-full absolute inset-0 flex items-center justify-center">
+          <div className="h-2 w-4/5 bg-blue-300/30 rounded-full"></div>
+        </div>
+      };
     }
+  }
+}
+
 
     // Create departments with colors
     createSection(1, 1, 2, 4, 'Produce');
@@ -598,52 +600,55 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
           </div>
 
           {/* Interactive Legend */}
-          <div className={`absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/80 transition-all duration-300 ease-out ${
-            showLegend ? 'p-3 w-48' : 'w-8 h-8 overflow-hidden'
-          }`}>
-            <button 
-              className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100/80 transition-colors text-gray-600"
-              onClick={() => setShowLegend(!showLegend)}
-            >
-              {showLegend ? <X className="w-4 h-4" /> : <HelpCircle className="w-4 h-4" />}
-            </button>
-            
-            {showLegend && (
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full border border-white flex items-center justify-center">
-                    <LocateFixed className="w-2.5 h-2.5 text-white" />
-                  </div>
-                  <span className="text-gray-700">You</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full border border-white flex items-center justify-center">
-                    <Target className="w-2.5 h-2.5 text-white" />
-                  </div>
-                  <span className="text-gray-700">Destination</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-gradient-to-br from-red-500 to-red-600 rounded-full border border-white flex items-center justify-center text-white text-[10px] font-bold">
-                    A
-                  </div>
-                  <span className="text-gray-700">Item</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-blue-100/70 rounded border border-blue-200"></div>
-                  <span className="text-gray-700">Visited</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-purple-100/60 rounded border border-purple-200"></div>
-                  <span className="text-gray-700">Path</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 bg-gray-300 rounded border border-gray-400"></div>
-                  <span className="text-gray-700">Wall</span>
-                </div>
-              </div>
-            )}
+         // Enhanced Legend Panel:
+<div className={`absolute bottom-4 left-4 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 transition-all duration-300 ${
+  showLegend ? 'p-4 w-52' : 'w-10 h-10 overflow-hidden'
+}`}>
+  <button 
+    className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-600"
+    onClick={() => setShowLegend(!showLegend)}
+  >
+    {showLegend ? <X className="w-4 h-4" /> : <HelpCircle className="w-4 h-4" />}
+  </button>
+  
+  {showLegend && (
+    <div className="space-y-3">
+      <h4 className="text-sm font-semibold text-gray-700 mb-1">Map Legend</h4>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex items-center space-x-3">
+          <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full border-2 border-white flex items-center justify-center shrink-0">
+            <LocateFixed className="w-3 h-3 text-white" />
           </div>
+          <span className="text-xs text-gray-700">You</span>
         </div>
+        <div className="flex items-center space-x-3">
+          <div className="w-5 h-5 bg-gradient-to-br from-green-500 to-green-600 rounded-full border-2 border-white flex items-center justify-center shrink-0">
+            <Target className="w-3 h-3 text-white" />
+          </div>
+          <span className="text-xs text-gray-700">Destination</span>
+        </div>
+        <div className="flex items-center space-x-3">
+          <div className="w-5 h-5 bg-gradient-to-br from-red-500 to-red-600 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shrink-0">
+            A
+          </div>
+          <span className="text-xs text-gray-700">Item</span>
+        </div>
+        <div className="flex items-center space-x-3">
+          <div className="w-5 h-5 bg-blue-100/80 rounded border border-blue-200 shrink-0"></div>
+          <span className="text-xs text-gray-700">Visited</span>
+        </div>
+        <div className="flex items-center space-x-3">
+          <div className="w-5 h-5 bg-purple-100/70 rounded border border-purple-200 shrink-0"></div>
+          <span className="text-xs text-gray-700">Path</span>
+        </div>
+        <div className="flex items-center space-x-3">
+          <div className="w-5 h-5 bg-gray-300 rounded border border-gray-400 shrink-0"></div>
+          <span className="text-xs text-gray-700">Wall</span>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
 
         {/* Controls */}
         <div className="mt-4 grid grid-cols-2 gap-3">
