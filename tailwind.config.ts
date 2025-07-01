@@ -63,6 +63,11 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
+			gridTemplateColumns: {
+				'16': 'repeat(16, minmax(0, 1fr))',
+				'20': 'repeat(20, minmax(0, 1fr))',
+				'24': 'repeat(24, minmax(0, 1fr))',
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
