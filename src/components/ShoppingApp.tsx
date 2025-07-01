@@ -92,6 +92,8 @@ const ShoppingApp = () => {
               <ShoppingList 
                 items={shoppingItems}
                 onUpdateItems={setShoppingItems}
+                scannedProduct={scannedProduct}
+                recommendedPairings={[]}
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-full py-12">
@@ -147,6 +149,7 @@ type Product = {
   price: number;
   aisle: string;
   category: string;
+  inStock?: boolean;
   // ... other recommendation-specific properties
 };
 

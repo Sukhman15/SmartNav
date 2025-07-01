@@ -120,10 +120,15 @@ const Index = () => {
                 <ShoppingList 
                   items={shoppingList}
                   onUpdateItems={setShoppingList}
+                  scannedProduct={null}
+                  recommendedPairings={[]}
                 />
               </div>
               <div>
-                <ProductRecommendations />
+                <ProductRecommendations 
+                  onAddToList={(product) => setShoppingList(prev => prev.some(item => item.name.toLowerCase() === product.name.toLowerCase()) ? prev : [...prev, { ...product, found: false }])}
+                  shoppingListItems={shoppingList}
+                />
               </div>
             </div>
           </TabsContent>

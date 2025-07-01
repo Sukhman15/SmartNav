@@ -114,7 +114,11 @@ const productDatabase: ScannedProduct[] = [
   }
 ];
 
-const CameraScanner: React.FC = () => {
+interface CameraScannerProps {
+  onProductScanned?: (product: ScannedProduct) => void;
+}
+
+const CameraScanner: React.FC<CameraScannerProps> = ({ onProductScanned }) => {
   const [isScanning, setIsScanning] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [scannedProduct, setScannedProduct] = useState<ScannedProduct | null>(null);
@@ -178,6 +182,9 @@ const CameraScanner: React.FC = () => {
     try {
       const recognizedProduct = await recognizeProductFromImage(file);
       setScannedProduct(recognizedProduct);
+      if (onProductScanned) {
+        onProductScanned(recognizedProduct);
+      }
     } catch (error) {
       console.error('Error recognizing product:', error);
     } finally {
@@ -191,6 +198,9 @@ const CameraScanner: React.FC = () => {
   const simulateProductScan = () => {
     const wheatBread = productDatabase.find(p => p.id === 'prod-123');
     setScannedProduct(wheatBread || productDatabase[0]);
+    if (onProductScanned) {
+      onProductScanned(wheatBread || productDatabase[0]);
+    }
   };
 
   const handleAddToList = () => {
