@@ -59,11 +59,13 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
 
   useEffect(() => {
     const newGrid: typeof grid = [];
+    const newGrid: typeof grid = [];
 
     for (let y = 0; y < GRID_SIZE; y++) {
       const row = [];
       for (let x = 0; x < GRID_SIZE; x++) {
         row.push({
+          x, y,
           x, y,
           walkable: true,
           data: {
@@ -96,6 +98,7 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
     };
 
     for (let x = 4; x <= 26; x += 4) {
+    for (let x = 4; x <= 26; x += 4) {
       for (let y = 2; y <= 25; y++) {
         if (y !== 10 && y !== 20) {
           newGrid[y][x].walkable = true;
@@ -112,7 +115,11 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
       }
     }
 
+    }
+
     for (let y = 10; y <= 20; y += 10) {
+      for (let x = 2; x <= 27; x++) {
+        if (x % 4 !== 0) {
       for (let x = 2; x <= 27; x++) {
         if (x % 4 !== 0) {
           newGrid[y][x].walkable = true;
@@ -127,6 +134,8 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
           };
         }
       }
+    }
+
     }
 
     createSection(1, 1, 2, 4, 'Produce');
@@ -161,6 +170,9 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
 
     setGrid(newGrid);
   }, []);
+
+  
+
 
   
 
