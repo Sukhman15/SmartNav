@@ -60,6 +60,16 @@ const InventoryTracker: React.FC = () => {
       status: 'out-of-stock',
       lastUpdated: new Date(Date.now() - 2 * 60 * 1000),
       trend: 'up'
+    },
+    {
+      id: '5',
+      name: 'Fresh Blueberries',
+      aisle: 'B2',
+      stock: 10,
+      maxStock: 40,
+      status: 'low-stock',
+      lastUpdated: new Date(Date.now() - 2 * 60 * 1000),
+      trend: 'up'
     }
   ]);
 
@@ -205,7 +215,7 @@ const InventoryTracker: React.FC = () => {
         ))}
 
         {/* Summary Stats */}
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+        <div className="mt-5 p-3 bg-gray-50 rounded-lg">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-lg font-bold text-green-600">

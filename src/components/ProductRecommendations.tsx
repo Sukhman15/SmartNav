@@ -46,7 +46,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
       id: 2,
       name: 'Avocado Oil Spray',
       price: 3.99,
-      rating: 4.5,
+      rating: 4.4,
       reviews: 156,
       aisle: 'B4',
       category: 'cooking',
@@ -76,19 +76,6 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
       category: 'produce',
       reason: 'Trending superfood this week',
       inStock: true
-    },
-    {
-      id: 5,
-      name: 'Almond Butter',
-      price: 7.99,
-      originalPrice: 9.99,
-      rating: 4.6,
-      reviews: 445,
-      aisle: 'B5',
-      category: 'pantry',
-      discount: 20,
-      reason: 'Great with whole grain bread',
-      inStock: false
     }
   ];
 
@@ -96,7 +83,8 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
     { id: 'all', name: 'All', icon: Star },
     { id: 'trending', name: 'Trending', icon: TrendingUp },
     { id: 'deals', name: 'Deals', icon: Percent },
-    { id: 'favorites', name: 'Favorites', icon: Heart }
+    { id: 'favorites', name: 'Favorites', icon: Heart },
+    { id: 'new', name: 'New', icon: Plus }, // Added new button
   ];
 
   const filteredRecommendations = recommendations.filter(product => {
@@ -121,7 +109,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
         </CardTitle>
         
         {/* Category Filters */}
-        <div className="flex space-x-2 mt-4">
+        <div className="flex flex-wrap gap-2 mt-4">
           {categories.map((category) => {
             const Icon = category.icon;
             return (
@@ -244,25 +232,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
           </div>
         )}
 
-        {/* Smart Insights */}
-        <div className="mt-6 p-3 bg-blue-50 rounded-lg">
-          <h5 className="font-medium text-sm text-blue-900 mb-2">💡 Smart Insights</h5>
-          <div className="text-xs text-blue-700 space-y-1">
-            <p>• Save $12.50 with current recommendations</p>
-            <p>• 3 items complement your dietary preferences</p>
-            <p>• Best deals expire in 2 days</p>
-          </div>
-        </div>
-
-        {/* Weekly Trends */}
-        <div className="mt-4 p-3 bg-green-50 rounded-lg">
-          <h5 className="font-medium text-sm text-green-900 mb-2">📈 This Week's Trends</h5>
-          <div className="text-xs text-green-700 space-y-1">
-            <p>• Organic produce sales up 25%</p>
-            <p>• Plant-based alternatives trending</p>
-            <p>• Meal prep ingredients popular</p>
-          </div>
-        </div>
+        
       </CardContent>
     </Card>
   );
