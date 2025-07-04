@@ -1,4 +1,4 @@
-# 🚀 Magic Shopping Assistant
+# 🚀 SmartNav Supermarket Suite 
 
 [![Build](https://img.shields.io/badge/build-passing-brightgreen)](https://vitejs.dev/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
