@@ -81,9 +81,9 @@ const AIAssistant: React.FC = () => {
     };
   }
   
-  if (lowerInput.includes('wide wheat bread') && (lowerInput.includes('where') || lowerInput.includes('location') || lowerInput.includes('aisle'))) {
+  if (lowerInput.includes('whole wheat bread') && (lowerInput.includes('where') || lowerInput.includes('location') || lowerInput.includes('aisle'))) {
     return {
-      content: "Wide wheat bread is located in Aisle C2. Current stock level: 8/50 (low stock).",
+      content: "Wholee wheat bread is located in Aisle C2. Current stock level: 8/50 (low stock).",
       suggestions: ['Navigate to Aisle C2', 'Find alternatives', 'Check other bread options']
     };
   }
@@ -104,9 +104,9 @@ const AIAssistant: React.FC = () => {
   
   // Nutrition information
   if (lowerInput.includes('nutrition') || lowerInput.includes('calories') || lowerInput.includes('ingredients')) {
-    if (lowerInput.includes('wide wheat bread') || lowerInput.includes('wheat bread')) {
+    if (lowerInput.includes('whole wheat bread') || lowerInput.includes('wheat bread')) {
       return {
-        content: `Nutrition Information for Wide Wheat Bread:
+        content: `Nutrition Information for whole Wheat Bread:
         B+ Nutrition Score
         Calories: 110 per slice
         Protein: 4g
@@ -200,9 +200,9 @@ const AIAssistant: React.FC = () => {
       };
     }
     
-    if (lowerInput.includes('wide wheat bread')) {
+    if (lowerInput.includes('whole wheat bread')) {
       return {
-        content: "Wide wheat bread current stock level: 8/50 (16% in stock, low availability). Would you like me to check if more is available in the back?",
+        content: "Whole wheat bread current stock level: 8/50 (16% in stock, low availability). Would you like me to check if more is available in the back?",
         suggestions: ['Check back stock', 'Find alternatives', 'Notify when restocked']
       };
     }
