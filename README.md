@@ -25,7 +25,7 @@
 
 ## 🖼️ Flowchart
 
-![Flow](https://via.placeholder.com/800x400?text=Flowchart)
+![Flow](public/flow.png)
 
 
 ---
