@@ -96,7 +96,8 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
     { id: 'all', name: 'All', icon: Star },
     { id: 'trending', name: 'Trending', icon: TrendingUp },
     { id: 'deals', name: 'Deals', icon: Percent },
-    { id: 'favorites', name: 'Favorites', icon: Heart }
+    { id: 'favorites', name: 'Favorites', icon: Heart },
+    { id: 'new', name: 'New', icon: Plus }, // Added new button
   ];
 
   const filteredRecommendations = recommendations.filter(product => {
@@ -121,7 +122,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
         </CardTitle>
         
         {/* Category Filters */}
-        <div className="flex space-x-2 mt-4">
+        <div className="flex flex-wrap gap-2 mt-4">
           {categories.map((category) => {
             const Icon = category.icon;
             return (
