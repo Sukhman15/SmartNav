@@ -60,6 +60,16 @@ const InventoryTracker: React.FC = () => {
       status: 'out-of-stock',
       lastUpdated: new Date(Date.now() - 2 * 60 * 1000),
       trend: 'up'
+    },
+    {
+      id: '5',
+      name: 'Fresh Blueberries',
+      aisle: 'B2',
+      stock: 10,
+      maxStock: 40,
+      status: 'low-stock',
+      lastUpdated: new Date(Date.now() - 2 * 60 * 1000),
+      trend: 'up'
     }
   ]);
 
