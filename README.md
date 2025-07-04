@@ -1,6 +1,5 @@
 # 🚀 SmartNav Supermarket Suite 
 
-[![Build](https://img.shields.io/badge/build-passing-brightgreen)](https://vitejs.dev/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-13.5+-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![Vercel](https://img.shields.io/badge/deployed%20on-Vercel-black?style=flat-square&logo=vercel)](https://vercel.com)
