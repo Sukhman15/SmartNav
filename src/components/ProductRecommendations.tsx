@@ -243,14 +243,14 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
         </div>
 
         {/* Weekly Trends */}
-        <div className="mt-4 p-3 bg-green-50 rounded-lg">
-          <h5 className="font-medium text-sm text-green-900 mb-2">📈 This Week's Trends</h5>
-          <div className="text-xs text-green-700 space-y-1">
-            <p>• Organic produce sales up 25%</p>
-            <p>• Plant-based alternatives trending</p>
-            <p>• Meal prep ingredients popular</p>
-          </div>
-        </div> */}
+        // <div className="mt-4 p-3 bg-green-50 rounded-lg">
+        //   <h5 className="font-medium text-sm text-green-900 mb-2">📈 This Week's Trends</h5>
+        //   <div className="text-xs text-green-700 space-y-1">
+        //     <p>• Organic produce sales up 25%</p>
+        //     <p>• Plant-based alternatives trending</p>
+        //     <p>• Meal prep ingredients popular</p>
+        //   </div>
+        // </div> */}
       </CardContent>
     </Card>
   );
