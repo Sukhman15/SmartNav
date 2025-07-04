@@ -46,7 +46,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
       id: 2,
       name: 'Avocado Oil Spray',
       price: 3.99,
-      rating: 4.5,
+      rating: 4.4,
       reviews: 156,
       aisle: 'B4',
       category: 'cooking',
@@ -76,19 +76,6 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
       category: 'produce',
       reason: 'Trending superfood this week',
       inStock: true
-    },
-    {
-      id: 5,
-      name: 'Almond Butter',
-      price: 7.99,
-      originalPrice: 9.99,
-      rating: 4.6,
-      reviews: 445,
-      aisle: 'B5',
-      category: 'pantry',
-      discount: 20,
-      reason: 'Great with whole grain bread',
-      inStock: false
     }
   ];
 
@@ -246,7 +233,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
         )}
 
         {/* Smart Insights */}
-        <div className="mt-6 p-3 bg-blue-50 rounded-lg">
+{/*         <div className="mt-6 p-3 bg-blue-50 rounded-lg">
           <h5 className="font-medium text-sm text-blue-900 mb-2">💡 Smart Insights</h5>
           <div className="text-xs text-blue-700 space-y-1">
             <p>• Save $12.50 with current recommendations</p>
@@ -263,7 +250,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
             <p>• Plant-based alternatives trending</p>
             <p>• Meal prep ingredients popular</p>
           </div>
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   );
