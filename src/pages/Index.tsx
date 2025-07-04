@@ -39,7 +39,7 @@ const Index = () => {
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                   SmartNav Pro
                 </h1>
-                <p className="text-sm text-gray-300 font-medium">AI-Powered Store Assistant</p>
+                <p className="text-sm text-gray-200 font-medium">AI-Powered Store Assistant</p>
               </div>
               <ThemeToggle />
             </div>
