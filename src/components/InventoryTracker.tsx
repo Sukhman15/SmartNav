@@ -215,7 +215,7 @@ const InventoryTracker: React.FC = () => {
         ))}
 
         {/* Summary Stats */}
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+        <div className="mt-5 p-3 bg-gray-50 rounded-lg">
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-lg font-bold text-green-600">

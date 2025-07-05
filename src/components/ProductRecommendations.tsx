@@ -46,7 +46,7 @@ const ProductRecommendations: React.FC<ProductRecommendationsProps> = ({ onAddTo
       id: 2,
       name: 'Avocado Oil Spray',
       price: 3.99,
-      rating: 4.5,
+      rating: 4.4,
       reviews: 156,
       aisle: 'B4',
       category: 'cooking',
