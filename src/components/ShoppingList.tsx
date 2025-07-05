@@ -253,6 +253,9 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
           </CardHeader>
           <CardContent className="space-y-3">
             {pendingItems.map((item) => (
+              
+              
+
               <div
                 key={item.id}
                 className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-green-100"

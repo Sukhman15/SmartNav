@@ -1,4 +1,4 @@
-# SmartNav Pro - AI-Powered Shopping Assistant
+# SmartNav - AI-Powered Shopping Assistant
 
 A comprehensive React-based shopping assistant with advanced AI/ML capabilities, multi-language support, and intelligent product recognition.
 
@@ -32,7 +32,7 @@ A comprehensive React-based shopping assistant with advanced AI/ML capabilities,
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd web-demo-magic-show
+   cd smartnav
    ```
 
 2. **Install dependencies**
