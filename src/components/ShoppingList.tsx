@@ -253,9 +253,12 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
           </CardHeader>
           <CardContent className="space-y-3">
             {pendingItems.map((item) => (
+              
+              
+
               <div
                 key={item.id}
-                className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50"
+                className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-green-100"
               >
                 <Checkbox
                   checked={item.found}
@@ -319,7 +322,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
                   onCheckedChange={() => handleToggleFound(item.id)}
                 />
 
-                <div className="flex-1 opacity-75">
+                <div className="flex-1 opacity-15">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium line-through">{item.name}</h4>
                     <div className="flex items-center space-x-2">

@@ -3,116 +3,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Camera, Scan, Info, ShoppingCart, Star, MapPin, Zap, Eye, Upload, Loader2 } from 'lucide-react';
-
-interface ScannedProduct {
-  id: string;
-  name: string;
-  price: number;
-  rating: number;
-  reviews: number;
-  aisle: string;
-  nutritionScore: string;
-  nutritionFacts: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    fiber: number;
-    sugar: number;
-    sodium: number;
-  };
-  ingredients: string[];
-  allergens: string[];
-  alternatives: Array<{
-    name: string;
-    price: number;
-    savings: number;
-    rating: number;
-    nutritionScore: string;
-  }>;
-  recommendedPairings: Array<{
-    name: string;
-    reason: string;
-  }>;
-  inStock: boolean;
-  imageUrl: string;
-}
-
-const productDatabase: ScannedProduct[] = [
-  {
-    id: 'prod-123',
-    name: 'Great Value Organic Whole Wheat Bread',
-    price: 3.49,
-    rating: 4.3,
-    reviews: 127,
-    aisle: 'B7',
-    nutritionScore: 'B+',
-    nutritionFacts: {
-      calories: 110,
-      protein: 4,
-      carbs: 22,
-      fat: 1.5,
-      fiber: 3,
-      sugar: 3,
-      sodium: 180
-    },
-    ingredients: [
-      'Organic whole wheat flour', 
-      'Water', 
-      'Organic cane sugar', 
-      'Yeast', 
-      'Sea salt', 
-      'Organic sunflower oil'
-    ],
-    allergens: ['Wheat'],
-    alternatives: [
-      { 
-        name: 'Dave\'s Killer Bread Organic 21 Whole Grains', 
-        price: 4.99, 
-        savings: -1.50,
-        rating: 4.7,
-        nutritionScore: 'A-'
-      },
-      { 
-        name: 'Nature\'s Own 100% Whole Wheat', 
-        price: 3.29, 
-        savings: 0.20,
-        rating: 4.2,
-        nutritionScore: 'B+'
-      },
-      { 
-        name: 'Sara Lee 100% Whole Wheat', 
-        price: 3.49, 
-        savings: 0.00,
-        rating: 4.0,
-        nutritionScore: 'B'
-      },
-      { 
-        name: 'Pepperidge Farm Whole Grain', 
-        price: 4.29, 
-        savings: -0.80,
-        rating: 4.2,
-        nutritionScore: 'B+'
-      }
-    ],
-    recommendedPairings: [
-      {
-        name: 'Organic Peanut Butter',
-        reason: 'High in protein, complements whole grains'
-      },
-      {
-        name: 'Local Honey',
-        reason: 'Natural sweetener that pairs well with whole wheat'
-      },
-      {
-        name: 'Avocado',
-        reason: 'Healthy fats that balance the carbohydrates'
-      }
-    ],
-    inStock: true,
-    imageUrl: 'https://i5.walmartimages.com/asr/1d1a0a4b-5a5c-4e3e-8b0f-5e5e5e5e5e5e.1b2b3b4b5b6b7b8b9b0b1b2b3b4b5b6b7b8b9b0b1b2b3b4b5b6b7b8b9b0'
-  }
-];
+import * as tf from '@tensorflow/tfjs';
+import { load as loadMobileNet } from '@tensorflow-models/mobilenet';
+import { productDatabase, ScannedProduct } from './productData';
 
 interface CameraScannerProps {
   onProductScanned?: (product: ScannedProduct) => void;
@@ -127,6 +20,111 @@ const CameraScanner: React.FC<CameraScannerProps> = ({ onProductScanned }) => {
   const [shoppingList, setShoppingList] = useState<ScannedProduct[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isModelLoading, setIsModelLoading] = useState(false);
+  const [model, setModel] = useState<any>(null);
+
+  // Load MobileNet model on mount
+  React.useEffect(() => {
+    const loadModel = async () => {
+      setIsModelLoading(true);
+      try {
+        await tf.ready();
+        const mobilenetModel = await loadMobileNet();
+        setModel(mobilenetModel);
+        console.log('MobileNet model loaded successfully (CameraScanner)');
+      } catch (error) {
+        console.error('Error loading MobileNet model:', error);
+      } finally {
+        setIsModelLoading(false);
+      }
+    };
+    loadModel();
+  }, []);
+
+  // Robust product matching logic (copied and adapted from EnhancedAIAssistant)
+  const findBestProductMatch = (predictions: any[]): ScannedProduct | null => {
+    const keywords = predictions.map(p => p.className.toLowerCase());
+    let bestMatch: ScannedProduct | null = null;
+    let bestScore = 0;
+    for (const product of productDatabase) {
+      const productWords = product.name.toLowerCase().split(/\s+/);
+      let score = 0;
+      // Direct keyword matching
+      for (const keyword of keywords) {
+        for (const word of productWords) {
+          if (keyword.includes(word) || word.includes(keyword)) {
+            score += 3;
+          }
+        }
+        // Tag matching
+        if (product.tags && product.tags.some(tag => keyword.includes(tag) || tag.includes(keyword))) {
+          score += 4;
+        }
+        // Category matching
+        if (product.category && keyword.includes(product.category.toLowerCase())) {
+          score += 2;
+        }
+      }
+      // Confidence-based scoring
+      for (let i = 0; i < Math.min(predictions.length, 3); i++) {
+        const prediction = predictions[i];
+        if (prediction.probability > 0.3) {
+          const keyword = prediction.className.toLowerCase();
+          for (const word of productWords) {
+            if (keyword.includes(word) || word.includes(keyword)) {
+              score += prediction.probability * 5;
+            }
+          }
+        }
+      }
+      // Visual characteristics matching
+      const visualKeywords: { [key: string]: string[] } = {
+        'apple': ['red', 'round', 'fruit'],
+        'banana': ['yellow', 'curved', 'fruit'],
+        'strawberry': ['red', 'small', 'fruit'],
+        'bread': ['brown', 'rectangular', 'baked'],
+        'yogurt': ['white', 'container', 'dairy'],
+        'spinach': ['green', 'leafy', 'vegetable'],
+        'carrot': ['orange', 'long', 'vegetable']
+      };
+      for (const [productType, visualTraits] of Object.entries(visualKeywords)) {
+        if (product.name.toLowerCase().includes(productType)) {
+          for (const trait of visualTraits) {
+            if (keywords.some(k => k.includes(trait))) {
+              score += 1;
+            }
+          }
+        }
+      }
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = product;
+      }
+    }
+    return bestScore > 0 ? bestMatch : null;
+  };
+
+  // Product info card (same as EnhancedAIAssistant)
+  const ProductInfoCard: React.FC<{ product: ScannedProduct }> = ({ product }) => {
+    const nutrition = product.nutritionFacts;
+    return (
+      <div className="rounded-lg border p-4 bg-white shadow-md max-w-md">
+        <div className="font-bold text-lg mb-2">{product.name}</div>
+        <div className="mb-1">Aisle: <span className="font-semibold">{product.aisle}</span></div>
+        <div className="mb-1">Price: <span className="font-semibold">${product.price.toFixed(2)}</span></div>
+        <div className="mb-1">Nutrition:</div>
+        <ul className="ml-4 text-sm">
+          <li>Calories: {nutrition.calories}</li>
+          <li>Protein: {nutrition.protein}g</li>
+          <li>Carbs: {nutrition.carbs}g</li>
+          <li>Fiber: {nutrition.fiber}g</li>
+          <li>Sugar: {nutrition.sugar}g</li>
+          <li>Sodium: {nutrition.sodium}mg</li>
+        </ul>
+        <div className="mt-2 text-sm">{product.description}</div>
+      </div>
+    );
+  };
 
   const startScanning = async () => {
     setIsScanning(true);
@@ -159,17 +157,33 @@ const CameraScanner: React.FC<CameraScannerProps> = ({ onProductScanned }) => {
     }
   };
 
+  // Update recognizeProductFromImage to use MobileNet
   const recognizeProductFromImage = async (imageFile: File) => {
-    // Create URL for the uploaded image to display it
+    console.log('Uploading image:', imageFile);
     const imageUrl = URL.createObjectURL(imageFile);
     setUploadedImage(imageUrl);
-    
-    // Always return the wheat bread product for testing
-    const wheatBread = productDatabase.find(p => p.id === 'prod-123');
-    return new Promise<ScannedProduct>((resolve) => {
-      setTimeout(() => {
-        resolve(wheatBread || productDatabase[0]);
-      }, 1500);
+    if (!model) {
+      alert('AI model is still loading. Please wait a moment.');
+      return null;
+    }
+    return new Promise<ScannedProduct | null>(async (resolve) => {
+      const img = new window.Image();
+      img.src = imageUrl;
+      img.onload = async () => {
+        try {
+          const predictions = await model.classify(img);
+          console.log('Predictions:', predictions);
+          const bestMatch = findBestProductMatch(predictions);
+          console.log('Best match:', bestMatch);
+          resolve(bestMatch);
+        } catch (err) {
+          console.error('Error classifying image:', err);
+          resolve(null);
+        }
+      };
+      img.onerror = () => {
+        resolve(null);
+      };
     });
   };
 
@@ -183,7 +197,7 @@ const CameraScanner: React.FC<CameraScannerProps> = ({ onProductScanned }) => {
       const recognizedProduct = await recognizeProductFromImage(file);
       setScannedProduct(recognizedProduct);
       if (onProductScanned) {
-        onProductScanned(recognizedProduct);
+        onProductScanned(recognizedProduct || productDatabase[0]); // Fallback to first product if no match
       }
     } catch (error) {
       console.error('Error recognizing product:', error);

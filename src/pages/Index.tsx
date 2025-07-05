@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Search, ShoppingCart, Camera, Mic, Navigation, Star, Clock, Zap, Wifi } from 'lucide-react';
+import { MapPin, ShoppingCart, Camera, Zap, Star, Navigation, Wifi } from 'lucide-react';
 import StoreMap from '@/components/StoreMap';
-import AIAssistant from '@/components/AIAssistant';
+import EnhancedAIAssistant from '@/components/EnhancedAIAssistant';
 import ShoppingList from '@/components/ShoppingList';
 import ProductRecommendations from '@/components/ProductRecommendations';
 import CameraScanner from '@/components/CameraScanner';
-import VoiceInterface from '@/components/VoiceInterface';
 import InventoryTracker from '@/components/InventoryTracker';
 import UserPreferences from '@/components/UserPreferences';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -26,7 +25,7 @@ const Index = () => {
   const [isListening, setIsListening] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-gray-100 to-blue-100 dark:from-gray-900 dark:via-gray-950 dark:to-blue-950 bg-background text-foreground">
+    <div className="min-h-screen bg-gray-50 text-foreground">
       {/* Enhanced Header */}
       <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg shadow-lg border-b border-gray-200/60 dark:border-gray-800/60 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -43,7 +42,6 @@ const Index = () => {
               </div>
               <ThemeToggle />
             </div>
-            
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-3 text-sm text-gray-200 bg-gray-800 px-4 py-2 rounded-full">
                 <MapPin className="w-4 h-4 text-blue-600" />
@@ -105,9 +103,7 @@ const Index = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
                 <StoreMap 
-                  currentLocation={currentLocation}
                   shoppingList={shoppingList}
-                  onLocationUpdate={setCurrentLocation}
                 />
               </div>
               <div className="space-y-6">
@@ -140,7 +136,9 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="assistant">
-            <AIAssistant />
+            <div className="flex justify-center items-center min-h-[600px]"> {/* Center the assistant */}
+              <EnhancedAIAssistant />
+            </div>
           </TabsContent>
 
           <TabsContent value="profile">
@@ -148,12 +146,6 @@ const Index = () => {
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Floating Voice Interface */}
-      <VoiceInterface 
-        isActive={isListening}
-        onToggle={setIsListening}
-      />
     </div>
   );
 };

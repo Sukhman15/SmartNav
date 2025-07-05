@@ -164,7 +164,7 @@ const InventoryTracker: React.FC = () => {
       
       <CardContent className="space-y-3">
         {inventoryItems.map((item) => (
-          <div key={item.id} className="border rounded-lg p-3 hover:bg-gray-50 transition-colors">
+          <div key={item.id} className="border rounded-lg p-3 hover:bg-gray-100 transition-colors">
             {/* Item Header */}
             <div className="flex items-center justify-between mb-2">
               <h4 className="font-medium text-sm">{item.name}</h4>
