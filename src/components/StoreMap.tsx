@@ -59,13 +59,11 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
 
   useEffect(() => {
     const newGrid: typeof grid = [];
-    const newGrid: typeof grid = [];
 
     for (let y = 0; y < GRID_SIZE; y++) {
       const row = [];
       for (let x = 0; x < GRID_SIZE; x++) {
         row.push({
-          x, y,
           x, y,
           walkable: true,
           data: {
@@ -98,7 +96,6 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
     };
 
     for (let x = 4; x <= 26; x += 4) {
-    for (let x = 4; x <= 26; x += 4) {
       for (let y = 2; y <= 25; y++) {
         if (y !== 10 && y !== 20) {
           newGrid[y][x].walkable = true;
@@ -115,11 +112,7 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
       }
     }
 
-    }
-
     for (let y = 10; y <= 20; y += 10) {
-      for (let x = 2; x <= 27; x++) {
-        if (x % 4 !== 0) {
       for (let x = 2; x <= 27; x++) {
         if (x % 4 !== 0) {
           newGrid[y][x].walkable = true;
@@ -134,8 +127,6 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
           };
         }
       }
-    }
-
     }
 
     createSection(1, 1, 2, 4, 'Produce');
@@ -170,12 +161,6 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
 
     setGrid(newGrid);
   }, []);
-
-  
-
-
-  
-
 
   // A* Pathfinding Algorithm (same as before)
   const findPath = useCallback((start: Position, end: Position): Position[] => {
@@ -627,18 +612,18 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
                   </div>
                   <span className="text-xs text-foreground">Item</span>
                 </div>
-                <div className="flex items-center space-x-3">
+                {/* <div className="flex items-center space-x-3">
                   <div className="w-5 h-5 bg-blue-100/80 dark:bg-blue-900/60 rounded border border-blue-200 dark:border-blue-800 shrink-0"></div>
                   <span className="text-xs text-foreground">Visited</span>
-                </div>
+                </div> */}
                 <div className="flex items-center space-x-3">
                   <div className="w-5 h-5 bg-purple-100/70 dark:bg-purple-900/60 rounded border border-purple-200 dark:border-purple-800 shrink-0"></div>
                   <span className="text-xs text-foreground">Path</span>
                 </div>
-                <div className="flex items-center space-x-3">
+                {/* <div className="flex items-center space-x-3">
                   <div className="w-5 h-5 bg-gray-300 dark:bg-gray-800 rounded border border-gray-400 dark:border-gray-700 shrink-0"></div>
                   <span className="text-xs text-foreground">Wall</span>
-                </div>
+                </div> */}
               </div>
             </div>
           )}
@@ -684,7 +669,7 @@ const StoreMap: React.FC<StoreMapProps> = ({ shoppingList }) => {
 
         {/* Quick Navigation */}
         <div className="mt-6">
-          <h3 className="font-bold text-gray-800 flex items-center space-x-2 mb-3">
+          <h3 className="font-bold text-grey-1000 flex items-center space-x-2 mb-3">
             <Zap className="w-4 h-4 text-yellow-500" />
             <span>Quick Navigation</span>
           </h3>

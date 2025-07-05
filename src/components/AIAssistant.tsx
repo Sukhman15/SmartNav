@@ -81,7 +81,7 @@ const AIAssistant: React.FC = () => {
     };
   }
   
-  if (lowerInput.includes('wide wheat bread') && (lowerInput.includes('where') || lowerInput.includes('location') || lowerInput.includes('aisle'))) {
+  if (lowerInput.includes('whe wheat bread') && (lowerInput.includes('where') || lowerInput.includes('location') || lowerInput.includes('aisle'))) {
     return {
       content: "Wide wheat bread is located in Aisle C2. Current stock level: 8/50 (low stock).",
       suggestions: ['Navigate to Aisle C2', 'Find alternatives', 'Check other bread options']

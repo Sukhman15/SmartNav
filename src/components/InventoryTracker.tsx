@@ -60,6 +60,16 @@ const InventoryTracker: React.FC = () => {
       status: 'out-of-stock',
       lastUpdated: new Date(Date.now() - 2 * 60 * 1000),
       trend: 'up'
+    },
+    {
+      id: '5',
+      name: 'Fresh Blueberries',
+      aisle: 'B2',
+      stock: 10,
+      maxStock: 40,
+      status: 'low-stock',
+      lastUpdated: new Date(Date.now() - 2 * 60 * 1000),
+      trend: 'up'
     }
   ]);
 
@@ -154,7 +164,7 @@ const InventoryTracker: React.FC = () => {
       
       <CardContent className="space-y-3">
         {inventoryItems.map((item) => (
-          <div key={item.id} className="border rounded-lg p-3 hover:bg-gray-50 transition-colors">
+          <div key={item.id} className="border rounded-lg p-3 hover:bg-gray-100 transition-colors">
             {/* Item Header */}
             <div className="flex items-center justify-between mb-2">
               <h4 className="font-medium text-sm">{item.name}</h4>
