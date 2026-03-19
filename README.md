@@ -1,4 +1,5 @@
 # SmartNav - AI-Powered Shopping Assistant
+https://smart-nav-red.vercel.app/
 
 A comprehensive React-based shopping assistant with advanced AI/ML capabilities, multi-language support, and intelligent product recognition.
 
